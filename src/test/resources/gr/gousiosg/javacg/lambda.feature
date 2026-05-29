@@ -68,10 +68,10 @@ Feature: Lambda
     # Creation of r3 in r2
     And the result should contain:
       """
-      M:NestedLambdaTest:lambda$lambda$methodA$2$1() (D)Runner:run(NestedLambdaTest)
+      M:NestedLambdaTest:lambda$methodA$1() (D)Runner:run(NestedLambdaTest)
       """
     # Call of methodB in r3
     And the result should contain:
       """
-      M:NestedLambdaTest:lambda$lambda$lambda$methodA$2$1$0() (M)NestedLambdaTest:methodB()
+      M:NestedLambdaTest:lambda$methodA$0() (M)NestedLambdaTest:methodB()
       """

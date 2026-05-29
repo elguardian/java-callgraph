@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javassist.CannotCompileException;
+import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtBehavior;
 import javassist.CtClass;
@@ -50,6 +51,9 @@ public class Instrumenter implements ClassFileTransformer {
     static List<Pattern> pkgExcl = new ArrayList<>();
 
     public static void premain(String argument, Instrumentation instrumentation) {
+
+        // Make agent classes (MethodStack) visible to Javassist's compiler
+        ClassPool.getDefault().insertClassPath(new ClassClassPath(MethodStack.class));
 
         // incl=com.foo.*,gr.bar.foo;excl=com.bar.foo.*
 
@@ -125,14 +129,17 @@ public class Instrumenter implements ClassFileTransformer {
         }
 
         if (enhanceClass) {
-            return enhanceClass(className, bytes);
+            return enhanceClass(loader, className, bytes);
         } else {
             return bytes;
         }
     }
 
-    private byte[] enhanceClass(String name, byte[] b) {
-        ClassPool pool = ClassPool.getDefault();
+    private byte[] enhanceClass(ClassLoader loader, String name, byte[] b) {
+        ClassPool pool = new ClassPool(ClassPool.getDefault());
+        if (loader != null) {
+            pool.appendClassPath(new javassist.LoaderClassPath(loader));
+        }
         CtClass clazz = null;
         try {
             clazz = pool.makeClass(new ByteArrayInputStream(b));
@@ -154,6 +161,9 @@ public class Instrumenter implements ClassFileTransformer {
             err("Cannot find: " + e.getMessage());
         } catch (IOException e) {
             err("Error writing: " + e.getMessage());
+        } catch (Throwable t) {
+            t.printStackTrace();
+            err("Throwable in enhanceClass: " + t);
         } finally {
             if (clazz != null) {
                 clazz.detach();
@@ -176,6 +186,6 @@ public class Instrumenter implements ClassFileTransformer {
     }
 
     private static void err(String msg) {
-        //System.err.println("[JAVACG-DYN] " + msg);
+        System.err.println("[JAVACG-DYN] " + msg);
     }
 }
