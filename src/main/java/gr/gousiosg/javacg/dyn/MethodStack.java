@@ -49,6 +49,9 @@ public class MethodStack {
     private static final ThreadLocal<Stack<String>> STACKS =
             ThreadLocal.withInitial(Stack::new);
 
+    // Prevents toString() calls on parameters from re-entering push() and overflowing the stack.
+    static final ThreadLocal<Boolean> IN_CAPTURE = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
     // global aggregate call-pair → count, written to stdout on shutdown
     private static final ConcurrentMap<Pair<String, String>, Integer> callgraph =
             new ConcurrentHashMap<>();
@@ -77,6 +80,36 @@ public class MethodStack {
                     .sorted((a, b) -> a.getValue().compareTo(b.getValue()))
                     .forEach(e -> System.out.println(e.getKey() + " " + e.getValue()));
         }));
+    }
+
+    /**
+     * Called from instrumented methods that have parameters.
+     * toString() is called here, guarded by IN_CAPTURE, so that if toString() itself
+     * triggers an instrumented method we record "[...]" rather than re-entering.
+     */
+    public static void push(String methodId, Object[] args, String[] names) throws IOException {
+        boolean wasCapturing = IN_CAPTURE.get();
+        IN_CAPTURE.set(Boolean.TRUE);
+        StringBuilder sb = new StringBuilder(methodId).append(" [");
+        try {
+            if (!wasCapturing) {
+                for (int i = 0; i < args.length; i++) {
+                    if (i > 0) sb.append(',');
+                    sb.append(i < names.length ? names[i] : ("arg" + i)).append('=');
+                    try {
+                        sb.append(args[i] == null ? "null" : args[i].toString());
+                    } catch (Throwable t) {
+                        sb.append('?');
+                    }
+                }
+            } else {
+                if (args.length > 0) sb.append("...");
+            }
+        } finally {
+            IN_CAPTURE.set(wasCapturing);
+        }
+        sb.append(']');
+        push(sb.toString());
     }
 
     public static void push(String callname) throws IOException {

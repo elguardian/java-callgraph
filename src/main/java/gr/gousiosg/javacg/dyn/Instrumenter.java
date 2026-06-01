@@ -43,7 +43,9 @@ import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtBehavior;
 import javassist.CtClass;
+import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.LocalVariableAttribute;
 
 public class Instrumenter implements ClassFileTransformer {
 
@@ -180,9 +182,54 @@ public class Instrumenter implements ClassFileTransformer {
         if (method.getName().equals(name))
             methodName = "<init>";
 
-        method.insertBefore("gr.gousiosg.javacg.dyn.MethodStack.push(\"" + className
-                + ":" + methodName + "\");");
+        int line = method.getMethodInfo().getLineNumber(0);
+        CtClass[] paramTypes = method.getParameterTypes();
+        String[] paramNames = getParamNames(method, paramTypes);
+
+        String methodId = className + ":" + methodName + (line >= 0 ? ":" + line : "");
+        String pushArg = buildPushArg(methodId, paramTypes, paramNames);
+
+        method.insertBefore("gr.gousiosg.javacg.dyn.MethodStack.push(" + pushArg + ");");
         method.insertAfter("gr.gousiosg.javacg.dyn.MethodStack.pop();");
+    }
+
+    private String buildPushArg(String methodId, CtClass[] paramTypes, String[] paramNames) {
+        StringBuilder names = new StringBuilder("new String[]{");
+        for (int i = 0; i < paramNames.length; i++) {
+            if (i > 0) names.append(',');
+            names.append('"').append(paramNames[i]).append('"');
+        }
+        names.append('}');
+        return "\"" + methodId + "\", $args, " + names;
+    }
+
+    private String[] getParamNames(CtBehavior method, CtClass[] paramTypes) {
+        String[] names = new String[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            names[i] = "arg" + i;
+        }
+        try {
+            javassist.bytecode.CodeAttribute ca = method.getMethodInfo().getCodeAttribute();
+            if (ca == null) return names;
+            LocalVariableAttribute lva = (LocalVariableAttribute)
+                    ca.getAttribute(LocalVariableAttribute.tag);
+            if (lva == null) return names;
+
+            boolean isStatic = Modifier.isStatic(method.getModifiers());
+            int slot = isStatic ? 0 : 1;
+            for (int i = 0; i < paramTypes.length; i++) {
+                for (int j = 0; j < lva.tableLength(); j++) {
+                    if (lva.index(j) == slot) {
+                        names[i] = lva.variableName(j);
+                        break;
+                    }
+                }
+                slot += (paramTypes[i] == CtClass.longType || paramTypes[i] == CtClass.doubleType) ? 2 : 1;
+            }
+        } catch (Exception e) {
+            // fallback: keep arg0..argN
+        }
+        return names;
     }
 
     private static void err(String msg) {

@@ -3,184 +3,249 @@ java-callgraph: Java Call Graph Utilities
 
 A suite of programs for generating static and dynamic call graphs in Java.
 
-* javacg-static: Reads classes from a jar file, walks down the method bodies and
-   prints a table of caller-caller relationships.
-* javacg-dynamic: Runs as a [Java agent](http://download.oracle.com/javase/6/docs/api/index.html?java/lang/instrument/package-summary.html) and instruments
-  the methods of a user-defined set of classes in order to track their invocations.
-  At JVM exit, prints a table of caller-callee relationships, along with a number
-  of calls
+* **javacg-static**: Reads classes from a jar file, walks down the method bodies and
+  prints a table of caller-callee relationships.
+* **javacg-dynamic**: Runs as a [Java agent](http://download.oracle.com/javase/6/docs/api/index.html?java/lang/instrument/package-summary.html)
+  and instruments the methods of a user-defined set of classes in order to track their
+  invocations at runtime. Produces a per-thread call trace with nanosecond timestamps and
+  a call-pair summary at JVM exit.
 
-#### Compile
+## Build
 
-The java-callgraph package is build with maven. Install maven and do:
+Requires Maven. Run:
 
 ```
 mvn install
 ```
 
-This will produce a `target` directory with the following three jars:
-- javacg-0.1-SNAPSHOT.jar: This is the standard maven packaged jar with static and dynamic call graph generator classes
-- `javacg-0.1-SNAPSHOT-static.jar`: This is an executable jar which includes the static call graph generator
-- `javacg-0.1-SNAPSHOT-dycg-agent.jar`: This is an executable jar which includes the dynamic call graph generator
+This produces three jars under `target/`:
 
-#### Run
+| Jar | Purpose |
+|-----|---------|
+| `javacg-0.1-SNAPSHOT.jar` | Standard Maven jar (library use) |
+| `javacg-0.1-SNAPSHOT-static.jar` | Executable jar — static call graph generator |
+| `javacg-0.1-SNAPSHOT-dycg-agent.jar` | Java agent — dynamic call graph generator |
 
-Instructions for running the callgraph generators
+---
 
-##### Static
+## Static call graph
 
-`javacg-static` accepts as arguments the jars to analyze.
-
-```
-java -jar javacg-0.1-SNAPSHOT-static.jar lib1.jar lib2.jar...
-```
-
-`javacg-static` produces combined output in the following format:
-
-###### For methods
+`javacg-static` accepts one or more jar files as arguments:
 
 ```
-  M:class1:<method1>(arg_types) (typeofcall)class2:<method2>(arg_types)
+java -jar javacg-0.1-SNAPSHOT-static.jar lib1.jar lib2.jar ...
 ```
 
-The line means that `method1` of `class1` called `method2` of `class2`.
-The type of call can have one of the following values (refer to
-the [JVM specification](http://java.sun.com/docs/books/jvms/second_edition/html/Instructions2.doc6.html)
-for the meaning of the calls):
+### Output format
 
- * `M` for `invokevirtual` calls
- * `I` for `invokeinterface` calls
- * `O` for `invokespecial` calls
- * `S` for `invokestatic` calls
- * `D` for `invokedynamic` calls
-
-For `invokedynamic` calls, it is not possible to infer the argument types.
-
-###### For classes
-
+**Method-level call:**
 ```
-  C:class1 class2
+M:class1:<method1>(arg_types) (calltype)class2:<method2>(arg_types)
 ```
 
-This means that some method(s) in `class1` called some method(s) in `class2`.
+`method1` of `class1` called `method2` of `class2`. Call type codes:
 
-##### Dynamic
+| Code | Bytecode instruction |
+|------|---------------------|
+| `M`  | `invokevirtual` |
+| `I`  | `invokeinterface` |
+| `O`  | `invokespecial` |
+| `S`  | `invokestatic` |
+| `D`  | `invokedynamic` (argument types unavailable) |
 
-`javacg-dynamic` uses
-[javassist](http://www.csg.is.titech.ac.jp/~chiba/javassist/) to insert probes
-at method entry and exit points. To be able to analyze a class `javassist` must
-resolve all dependent classes at instrumentation time. To do so, it reads
-classes from the JVM's boot classloader. By default, the JVM sets the boot
-classpath to use Java's default classpath implementation (`rt.jar` on
-Win/Linux, `classes.jar` on the Mac). The boot classpath can be extended using
-the `-Xbootclasspath` option, which works the same as the traditional
-`-classpath` option. It is advisable for `javacg-dynamic` to work as expected,
-to set the boot classpath to the same, or an appropriate subset, entries as the
-normal application classpath.
-
-Moreover, since instrumenting all methods will produce huge callgraphs which
-are not necessarily helpful (e.g. it will include Java's default classpath
-entries), `javacg-dynamic` includes support for restricting the set of classes
-to be instrumented through include and exclude statements. The options are
-appended to the `-javaagent` argument and has the following format
-
+**Class-level call:**
 ```
--javaagent:javacg-dycg-agent.jar="incl=mylib.*,mylib2.*,java.nio.*;excl=java.nio.charset.*"
+C:class1 class2
 ```
 
-The example above will instrument all classes under the the `mylib`, `mylib2` and
-`java.nio` namespaces, except those that fall under the `java.nio.charset` namespace.
+Some method in `class1` called some method in `class2`.
+
+---
+
+## Dynamic call graph (Java agent)
+
+`javacg-dynamic` uses [Javassist](https://www.javassist.org/) to insert `push`/`pop` probes
+at every method entry and exit point. It is **thread-aware**: each thread maintains its own
+call stack, so multi-threaded applications (including application servers) produce complete,
+non-interleaved per-thread traces.
+
+### Agent argument format
 
 ```
-java
--Xbootclasspath:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar:mylib.jar
--javaagent:javacg-0.1-SNAPSHOT-dycg-agent.jar="incl=mylib.*;"
--classpath mylib.jar mylib.Mainclass
+-javaagent:javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=pkg1.*,pkg2.*;excl=pkg1.internal.*
 ```
 
-`javacg-dynamic` produces two kinds of output. On the standard output, it
-writes method call pairs as shown below:
+| Parameter | Description |
+|-----------|-------------|
+| `incl=<patterns>` | Comma-separated regex patterns (anchored at end). Classes matching any pattern are instrumented. |
+| `excl=<patterns>` | Comma-separated regex patterns. Classes matching are skipped even if they match an `incl` pattern. |
+
+Multiple `incl`/`excl` groups can be combined with `;` as delimiter.
+
+### Output
+
+**`/tmp/calltrace.txt`** — written at runtime, one line per method entry/exit:
 
 ```
-class1:method1 class2:method2 numcalls
+>[depth][tid]fully.qualified.ClassName:methodName=timestamp_nanos   (entry)
+<[depth][tid]fully.qualified.ClassName:methodName=timestamp_nanos   (exit)
 ```
 
-It also produces a file named `calltrace.txt` in which it writes the entry
-and exit timestamps for methods, thereby turning `javacg-dynamic` into
-a poor man's profiler. The format is the following:
+**Standard output** — written at JVM shutdown, one line per unique caller→callee pair:
 
 ```
-<>[stack_depth][thread_id]fqdn.class:method=timestamp_nanos
+caller.Class:method callee.Class:method count
 ```
 
-The output line starts with a `<` or `>` depending on whether it is a method
-entry or exit. It then writes the stack depth, thread id and the class and
-method name, followed by a timestamp. The provided `process_trace.rb`
-script processes the callgraph output to generate total time per method
-information.
+### Simple example
 
-#### Examples
-
-The following examples instrument the
-[Dacapo benchmark suite](http://dacapobench.org/) to produce dynamic call graphs.
-The Dacapo benchmarks come in a single big jar archive that contains all dependency
-libraries. To build the boot class path required for the javacg-dyn program,
-extract the `dacapo.jar` to a directory: all the required libraries can be found
-in the `jar` directory.
-
-Running the batik Dacapo benchmark:
-
-```
-java -Xbootclasspath:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar:jar/batik-all.jar:jar/xml-apis-ext.jar -javaagent:target/javacg-0.1-SNAPSHOT-dycg-agent.jar="incl=org.apache.batik.*,org.w3c.*;" -jar dacapo-9.12-bach.jar batik -s small |tail -n 10
-```
-<br/>
-
-```
-[...]
-org.apache.batik.dom.AbstractParentNode:appendChild org.apache.batik.dom.AbstractParentNode:fireDOMNodeInsertedEvent 6270<br/>
-org.apache.batik.dom.AbstractParentNode:fireDOMNodeInsertedEvent org.apache.batik.dom.AbstractDocument:getEventsEnabled 6280<br/>
-org.apache.batik.dom.AbstractParentNode:checkAndRemove org.apache.batik.dom.AbstractNode:getOwnerDocument 6280<br/>
-org.apache.batik.dom.util.DoublyIndexedTable:put org.apache.batik.dom.util.DoublyIndexedTable$Entry:DoublyIndexedTable$Entry 6682<br/>
-org.apache.batik.dom.util.DoublyIndexedTable:put org.apache.batik.dom.util.DoublyIndexedTable:hashCode 6693<br/>
-org.apache.batik.dom.AbstractElement:invalidateElementsByTagName org.apache.batik.dom.AbstractElement:getNodeType 7198<br/>
-org.apache.batik.dom.AbstractElement:invalidateElementsByTagName org.apache.batik.dom.AbstractDocument:getElementsByTagName 14396<br/>
-org.apache.batik.dom.AbstractElement:invalidateElementsByTagName org.apache.batik.dom.AbstractDocument:getElementsByTagNameNS 28792<br/>
+```bash
+java \
+  -javaagent:target/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=com.example.*; \
+  -cp myapp.jar \
+  com.example.Main
 ```
 
-Running the lucene Dacapo benchmark:
+---
 
+## JBoss / WildFly setup
+
+WildFly uses [JBoss Modules](https://github.com/jboss-modules/jboss-modules), a custom
+classloader that isolates subsystem modules from each other and from the JVM bootstrap
+classloader. Without extra configuration the agent's `MethodStack` class is invisible to
+instrumented JBoss module classes at runtime, causing `NoClassDefFoundError`.
+
+Two things are required:
+
+1. **Expose the agent package to JBoss Modules** via the system property
+   `jboss.modules.system.pkgs`. JBoss Modules reads this property at startup and treats the
+   listed packages as "system packages" — loadable from the bootstrap classloader by any
+   module without an explicit dependency declaration.
+
+2. **Attach the agent** with `incl`/`excl` patterns that target the subsystem packages you
+   want to trace.
+
+### Passing JVM arguments to the managed server
+
+#### Option A — `standalone.conf` (permanent)
+
+Edit `$WILDFLY_HOME/bin/standalone.conf` and append to `JAVA_OPTS`:
+
+```bash
+JAVA_OPTS="$JAVA_OPTS \
+  -Djboss.modules.system.pkgs=org.jboss.byteman,gr.gousiosg.javacg.dyn \
+  -javaagent:/path/to/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=org.jboss.as.jmx.*,org.jboss.as.controller.access.*;"
 ```
-java -Xbootclasspath:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar:jar/lucene-core-2.4.jar:jar/luindex.jar -javaagent:target/javacg-0.1-SNAPSHOT-dycg-agent.jar="incl=org.apache.lucene.*;" -jar dacapo-9.12-bach.jar luindex -s small |tail -n 10
-```
-<br/><br/>
 
-```
-[...]
-org.apache.lucene.analysis.Token:setTermBuffer org.apache.lucene.analysis.Token:growTermBuffer 43449<br/>
-org.apache.lucene.analysis.CharArraySet:getSlot org.apache.lucene.analysis.CharArraySet:getHashCode 43472<br/>
-org.apache.lucene.analysis.CharArraySet:getSlot org.apache.lucene.analysis.CharArraySet:equals 46107<br/>
-org.apache.lucene.index.FreqProxTermsWriter:appendPostings org.apache.lucene.store.IndexOutput:writeVInt 46507<br/>
-org.apache.lucene.store.IndexInput:readVInt org.apache.lucene.index.ByteSliceReader:readByte 63927<br/>
-org.apache.lucene.index.TermsHashPerField:writeVInt org.apache.lucene.index.TermsHashPerField:writeByte 63927<br/>
-org.apache.lucene.store.IndexOutput:writeVInt org.apache.lucene.store.BufferedIndexOutput:writeByte 94239<br/>
-org.apache.lucene.index.TermsHashPerField:quickSort org.apache.lucene.index.TermsHashPerField:comparePostings 107343<br/>
-org.apache.lucene.analysis.Token:termBuffer org.apache.lucene.analysis.Token:initTermBuffer 162115<br/>
-org.apache.lucene.analysis.Token:termLength org.apache.lucene.analysis.Token:initTermBuffer 205554<br/>
+If `jboss.modules.system.pkgs` is already set (e.g. for Byteman), append with a comma:
+```bash
+-Djboss.modules.system.pkgs=org.jboss.byteman,gr.gousiosg.javacg.dyn
 ```
 
-#### Known Restrictions
+#### Option B — Arquillian test suite (`arquillian.xml`)
 
-* The static call graph generator does not account for methods invoked via
-  reflection.
-* The dynamic call graph generator will not work reliably (or at all) for
-  multithreaded programs
-* The dynamic call graph generator does not handle exceptions very well, so some
-methods might appear as having never returned
+Pass the arguments as `javaVmArguments` in the container configuration:
 
-#### Author
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian
+                                http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <defaultProtocol type="jmx-as7" />
+
+    <container qualifier="jboss" default="true">
+        <configuration>
+            <property name="jbossHome">${jboss.install.dir}</property>
+            <property name="javaVmArguments">
+                ${server.jvm.args}
+                -Djboss.modules.system.pkgs=gr.gousiosg.javacg.dyn
+                -javaagent:/path/to/javacg-0.1-SNAPSHOT-dycg-agent.jar=incl=org.jboss.as.jmx.*,org.jboss.as.controller.access.*,org.jboss.as.domain.management.access.*,org.wildfly.mypackage.*;
+            </property>
+            <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+            <property name="jbossArguments">${jboss.args}</property>
+            <property name="allowConnectingToRunningServer">true</property>
+            <property name="managementAddress">${node0:127.0.0.1}</property>
+            <property name="managementPort">${as.managementPort:9990}</property>
+            <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+            <property name="waitForPortsTimeoutInSeconds">8</property>
+            <property name="javaHome">${container.java.home}</property>
+        </configuration>
+    </container>
+
+</arquillian>
+```
+
+### Choosing `incl` patterns
+
+Instrument only the subsystem packages relevant to your analysis. Instrumenting too many
+classes will slow the server significantly and produce very large `calltrace.txt` files.
+
+| Goal | Suggested `incl` patterns |
+|------|--------------------------|
+| JMX subsystem | `org.jboss.as.jmx.*` |
+| Management RBAC | `org.jboss.as.controller.access.*,org.jboss.as.domain.management.access.*` |
+| Specific test deployment | `org.mycompany.mytests.*` |
+| Full management layer | `org.jboss.as.controller.*` *(slow — use sparingly)* |
+
+### Reading the trace
+
+After the test run, `/tmp/calltrace.txt` contains one entry per method entry/exit.
+To find the call chain for a specific operation, filter on a known entry point:
+
+```bash
+# Find the line numbers where callMBeanServer was entered/exited
+grep -n "callMBeanServer" /tmp/calltrace.txt
+
+# Show 200 lines of context around that entry point
+sed -n '440530,440730p' /tmp/calltrace.txt
+
+# Filter for RBAC/authorization calls within a line range
+sed -n '440530,631287p' /tmp/calltrace.txt | \
+  grep "StandardRBACAuthorizer\|ManagementSecurityIdentitySupplier\|AuthorizationResult"
+```
+
+The `[depth]` field in each line tells you the call stack depth at that point. A `>[N]` entry
+followed by a `<[N]` exit with no deeper entries means the method made no instrumented calls.
+
+### Classloader notes
+
+WildFly module classloaders are isolated from each other. When Javassist instruments a class
+loaded by a JBoss module classloader (e.g. `org.jboss.as.jmx`), the compiled probe code
+(`MethodStack.push(...)`) must be resolvable at that classloader's level. The agent handles
+this in two ways:
+
+1. **Compile time** — `ClassPool.getDefault().insertClassPath(new ClassClassPath(MethodStack.class))`
+   is called in `premain()`, making `MethodStack` visible to Javassist's compiler for every
+   subsequent instrumentation.
+
+2. **Runtime** — `jboss.modules.system.pkgs=gr.gousiosg.javacg.dyn` causes JBoss Modules to
+   add the agent package to every module's classloader as a system package, so the
+   `MethodStack` class found in the bootstrap classloader at JVM startup is the same class
+   instance used at method invocation time.
+
+Do **not** use `Instrumentation.appendToBootstrapClassLoaderSearch()` for the agent jar in a
+WildFly environment. It causes Javassist's own classes to appear in both the bootstrap and
+application classloaders, which triggers `LinkageError` on every call to
+`CtClass.getDeclaredBehaviors()`, silently preventing all instrumentation.
+
+---
+
+## Known restrictions
+
+* The static call graph generator does not account for methods invoked via reflection.
+* The dynamic call graph generator does not handle exceptions that bypass normal returns;
+  affected methods may appear as never having exited in `calltrace.txt`.
+* Instrumenting a very large number of classes significantly increases startup time and
+  memory usage due to Javassist's class transformation overhead.
+
+---
+
+## Author
 
 Georgios Gousios <gousiosg@gmail.com>
 
-#### License
+## License
 
 [2-clause BSD](http://www.opensource.org/licenses/bsd-license.php)
