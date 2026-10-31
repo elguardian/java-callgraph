@@ -221,6 +221,8 @@ public final class Recorder {
         final Path dir;
         final DataOutputStream out;
         final Instant started = Instant.now();
+        /** System.nanoTime() at {@link #started}: lets readers put events of several JVMs on one clock. */
+        final long startedNanos = System.nanoTime();
 
         private Recording(String label, Path dir, DataOutputStream out) {
             this.label = label;
@@ -263,6 +265,8 @@ public final class Recorder {
             p.setProperty("label", label);
             p.setProperty("pid", Long.toString(ProcessHandle.current().pid()));
             p.setProperty("started", started.toString());
+            p.setProperty("startedEpochMillis", Long.toString(started.toEpochMilli()));
+            p.setProperty("startedNanoTime", Long.toString(startedNanos));
             p.setProperty(complete ? "stopped" : "dumped", Instant.now().toString());
             p.setProperty("complete", Boolean.toString(complete));
             try (Writer w = Files.newBufferedWriter(dir.resolve(TraceFormat.INFO), StandardCharsets.UTF_8)) {

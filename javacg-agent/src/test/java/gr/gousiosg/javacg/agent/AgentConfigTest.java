@@ -39,6 +39,19 @@ class AgentConfigTest {
     }
 
     @Test
+    void expandsSystemPropertiesInLabelAndOut() {
+        System.setProperty("javacg.test.node", "node-2");
+        try {
+            AgentConfig c = AgentConfig.parse("incl=a.*;label=%{javacg.test.node:client};out=/tmp/%{javacg.test.none:x}/r");
+            assertEquals("node-2", c.label);
+            assertEquals("/tmp/x/r", c.out);
+            assertEquals("run-", AgentConfig.expand("run-%{javacg.test.none}"));
+        } finally {
+            System.clearProperty("javacg.test.node");
+        }
+    }
+
+    @Test
     void parsesNewOptions() {
         AgentConfig c = AgentConfig.parse("incl=a.*;out=/tmp/x;label=t1;record=manual;args=ToString;locks=true;jmx=off;verbose=true");
         assertEquals("/tmp/x", c.out);

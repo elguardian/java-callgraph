@@ -94,6 +94,19 @@ public final class Recording {
         return Boolean.parseBoolean(info.getProperty("complete", "false"));
     }
 
+    /**
+     * Converts an event's {@code System.nanoTime()} to epoch milliseconds, so recordings of
+     * different JVMs share a time line. Returns -1 when the recording has no clock anchor.
+     */
+    public double toEpochMillis(long nanos) {
+        String millis = info.getProperty("startedEpochMillis");
+        String anchor = info.getProperty("startedNanoTime");
+        if (millis == null || anchor == null) {
+            return -1;
+        }
+        return Long.parseLong(millis) + (nanos - Long.parseLong(anchor)) / 1_000_000.0;
+    }
+
     /** Method for an id; ids missing from the table map to a placeholder. */
     public MethodId method(int id) {
         MethodId m = methods.get(id);

@@ -27,6 +27,14 @@ public final class TraceText {
     }
 
     public static void write(Recording recording, Writer out) throws IOException {
+        write(recording, out, false);
+    }
+
+    /**
+     * @param wallClock print event times as epoch milliseconds (with microseconds) instead
+     *                  of raw nanoTime, to compare recordings of several JVMs
+     */
+    public static void write(Recording recording, Writer out, boolean wallClock) throws IOException {
         PrintWriter w = new PrintWriter(out);
         Map<Long, String> pendingEnter = new HashMap<>();
         CallStacks stacks = new CallStacks(new CallStacks.Listener() {
@@ -34,7 +42,7 @@ public final class TraceText {
             public void onEnter(long thread, CallStacks.Frame frame, List<CallStacks.Frame> stack) {
                 flush(thread);
                 pendingEnter.put(thread, ">[" + stack.size() + "][" + thread + "]" + name(frame) + "\u0000="
-                        + frame.enterNanos());
+                        + time(frame.enterNanos()));
             }
 
             @Override
@@ -57,7 +65,7 @@ public final class TraceText {
                     case UNWOUND -> "!<unwound>";
                     default -> "";
                 };
-                w.println("<[" + stack.size() + "][" + thread + "]" + name(frame) + suffix + "=" + exitNanos);
+                w.println("<[" + stack.size() + "][" + thread + "]" + name(frame) + suffix + "=" + time(exitNanos));
             }
 
             @Override
@@ -70,6 +78,12 @@ public final class TraceText {
                 if (line != null) {
                     w.println(line.replace("\u0000", ""));
                 }
+            }
+
+            private String time(long nanos) {
+                return wallClock && recording.toEpochMillis(nanos) >= 0
+                        ? String.format(java.util.Locale.ROOT, "%.3f", recording.toEpochMillis(nanos))
+                        : Long.toString(nanos);
             }
 
             private String name(CallStacks.Frame f) {

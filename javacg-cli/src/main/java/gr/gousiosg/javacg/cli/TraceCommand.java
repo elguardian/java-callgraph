@@ -41,12 +41,14 @@ final class TraceCommand implements Command {
                                    json    runtime call graph
                                    dot     runtime call graph for Graphviz
                   --output <file>  write to a file instead of stdout
+                  --wallclock      text format: epoch milliseconds instead of nanoTime, to line up
+                                   recordings of several JVMs
                 """;
     }
 
     @Override
     public int run(List<String> argv, PrintStream out, PrintStream err) throws Exception {
-        Args a = Args.parse(argv, Set.of(), Set.of("format", "output"));
+        Args a = Args.parse(argv, Set.of("wallclock"), Set.of("format", "output"));
         if (a.positional().size() != 1) {
             throw new Args.UsageException("Expected one recording directory");
         }
@@ -59,7 +61,7 @@ final class TraceCommand implements Command {
         Output.write(a.get("output", null), out, w -> {
             try {
                 switch (format) {
-                    case TEXT -> TraceText.write(rec, w);
+                    case TEXT -> TraceText.write(rec, w, a.flag("wallclock"));
                     case PAIRS -> summary.writePairs(w);
                     case TIMING -> summary.writeTiming(w);
                     case JSON -> CallGraphJson.write(summary.graph(), w);

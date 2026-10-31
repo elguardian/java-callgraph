@@ -11,7 +11,8 @@ package gr.gousiosg.javacg.rt;
  *   symbols.tsv           id \t M \t owner \t name \t descriptor \t firstLine
  *                         id \t C \t className
  *   threads.tsv           threadId \t threadName
- *   recording.properties  label, pid, start/stop wall clock, dropped chunk count
+ *   recording.properties  label, pid, start/stop wall clock, and the nanoTime at start
+ *                         (startedEpochMillis/startedNanoTime) to convert event times
  * </pre>
  *
  * Records (big-endian, as written by {@code DataOutputStream}):

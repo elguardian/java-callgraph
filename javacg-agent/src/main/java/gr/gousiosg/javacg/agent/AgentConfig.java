@@ -21,6 +21,11 @@ import java.util.regex.PatternSyntaxException;
  * verbose=false    log every instrumented class
  * </pre>
  *
+ * {@code out} and {@code label} may reference system properties as {@code %{name}} or
+ * {@code %{name:default}}, e.g. {@code label=%{jboss.node.name:client}}, so one shared argument
+ * line gives each JVM of a cluster its own recording. ({@code ${...}} is not used because
+ * Maven and Arquillian would substitute it first.)
+ *
  * Invalid patterns and unknown keys are reported and ignored; they never stop the JVM.
  */
 final class AgentConfig {
@@ -65,8 +70,8 @@ final class AgentConfig {
             switch (key) {
                 case "incl" -> c.patterns(value, c.include);
                 case "excl" -> c.patterns(value, c.exclude);
-                case "out" -> c.out = value;
-                case "label" -> c.label = value;
+                case "out" -> c.out = expand(value);
+                case "label" -> c.label = expand(value);
                 case "record" -> {
                     if (value.equalsIgnoreCase("manual")) {
                         c.recordAtStartup = false;
@@ -117,6 +122,23 @@ final class AgentConfig {
             }
         }
         return true;
+    }
+
+    private static final Pattern PROPERTY = Pattern.compile("%\\{([^}:]+)(?::([^}]*))?}");
+
+    /** Replaces {@code %{name}} / {@code %{name:default}} with system property values. */
+    static String expand(String value) {
+        java.util.regex.Matcher m = PROPERTY.matcher(value);
+        StringBuilder sb = new StringBuilder();
+        while (m.find()) {
+            String v = System.getProperty(m.group(1));
+            if (v == null) {
+                v = m.group(2) != null ? m.group(2) : "";
+            }
+            m.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(v));
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     private void patterns(String value, List<Pattern> target) {

@@ -97,6 +97,11 @@ commands there).
 | `jmx=auto\|off\|<ms>` | `auto` | Delay before the `javacg:type=Recorder` MBean is registered; `auto` = 20 s on WildFly, else 0 |
 | `verbose=true\|false` | `false` | Log every instrumented class |
 
+`out` and `label` may reference system properties as `%{name}` or `%{name:default}`. With
+one argument line shared by every node of a cluster, `label=%{jboss.node.name:client}`
+gives each JVM its own recording (`${...}` is avoided because Maven and Arquillian would
+substitute it).
+
 `java.*`, `jdk.*`, `sun.*`, `com.sun.*`, `javax.management.*` and the agent's own classes are
 never instrumented. Invalid patterns or options are reported on stderr and ignored.
 
