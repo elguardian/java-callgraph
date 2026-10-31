@@ -16,8 +16,13 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>javacg-static</artifactId>
-      <version>${project.version}</version>
+      <artifactId>javacg-analyze</artifactId>
+    </dependency>
+    <dependency>
+      <!-- only for the end-to-end tests: the packaged agent jar must be built first -->
+      <groupId>${project.groupId}</groupId>
+      <artifactId>javacg-agent</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -28,6 +33,23 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <javacg.agent.jar>${project.basedir}/../javacg-agent/target/javacg-agent.jar</javacg.agent.jar>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>

@@ -18,6 +18,7 @@ and the phase-by-phase roadmap.
 | `javacg-rt` | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
 | `javacg-agent` | Java agent, packaged as `javacg-agent/target/javacg-agent.jar` |
 | `javacg-static` | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
+| `javacg-analyze` | Merged static + runtime model, graph queries, gap report, detectors |
 | `javacg-cli` | Command line front end, packaged as `javacg-cli/target/javacg.jar` |
 | `javacg-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
 
@@ -140,6 +141,43 @@ java -jar javacg.jar trace [--format text|pairs|timing|json|dot] <out>/<label>
 
 The files in a recording are described in `javacg-rt/.../TraceFormat.java`; the
 `symbols.tsv` table lists every instrumented method, including the ones that never ran.
+
+## Merging static and runtime graphs
+
+```
+java -jar javacg.jar merge --app app.war --lib deps.jar --trace /tmp/javacg [--format gaps|json|dot|dot-classes]
+```
+
+`--trace` takes a recording directory or the agent's `out=` directory (every recording in it
+is loaded). Every edge of the merged graph is `STATIC`, `DYNAMIC` (runtime only) or `BOTH`.
+The default `gaps` report lists where the two views disagree:
+
+* **runtime-only edges**: calls with no static call site, e.g. reflection, dynamic proxies,
+  EJB/CDI interceptors, or callbacks made through code that was not instrumented;
+* **static edges never exercised although the caller ran**: untested branches, or edges
+  CHA over-approximated;
+* **instrumented methods that never ran**.
+
+## Queries
+
+```
+java -jar javacg.jar query paths   --app app.jar --from 'com.acme.Api.*' --to 'com.acme.Dao.delete'
+java -jar javacg.jar query guard   --app app.jar --trace out/ --from 'com.acme.Api.*' \
+                                   --to 'com.acme.Dao.delete' --through 'com.acme.Security.check*'
+java -jar javacg.jar query callers --trace out/ --method 'com.acme.Dao.*' --max-depth 3
+java -jar javacg.jar query callees --app app.jar --method 'com.acme.Api.login(java.lang.String)'
+```
+
+Method patterns are `pkg.Class.method` with `*` wildcards and an optional parameter suffix,
+either Java types `(int,java.lang.String)` or a JVM descriptor `(ILjava/lang/String;)V`.
+`--edges static|dynamic` restricts a query to what the static analysis found or to what
+actually ran (default: all edges).
+
+`guard` checks that every call chain from `--from` to `--to` passes through a `--through`
+method, i.e. that the guard is a caller on the stack, and exits with code 3 printing a
+counterexample otherwise, so it can fail a CI build. It works on the call graph, which has
+no notion of order within a method body: a check made by the same method just *before* the
+guarded call (`check(); delete();`) is a sibling, not a caller, and does not count.
 
 ## WildFly / JBoss EAP
 
