@@ -236,10 +236,15 @@ public final class Recorder {
             }
             Files.createDirectories(dir);
             OutputStream file = Files.newOutputStream(dir.resolve(TraceFormat.EVENTS));
-            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(file, 256 * 1024));
-            out.writeInt(TraceFormat.MAGIC);
-            out.writeInt(TraceFormat.VERSION);
-            return new Recording(label, dir, out);
+            try {
+                DataOutputStream out = new DataOutputStream(new BufferedOutputStream(file, 256 * 1024));
+                out.writeInt(TraceFormat.MAGIC);
+                out.writeInt(TraceFormat.VERSION);
+                return new Recording(label, dir, out);
+            } catch (IOException | RuntimeException e) {
+                file.close();
+                throw e;
+            }
         }
 
         void writeTables(boolean complete) throws IOException {

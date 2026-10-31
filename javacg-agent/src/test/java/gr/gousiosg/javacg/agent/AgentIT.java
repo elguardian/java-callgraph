@@ -195,6 +195,9 @@ class AgentIT {
         assertEquals(0, s.unmatchedExits());
         assertEquals(1L, s.stats().get(m("deeper", "()V")).exceptions().get("java.lang.IllegalStateException"));
         assertEquals(1L, s.stats().get(m("thrower", "()V")).exceptions().get("java.lang.IllegalStateException"));
+        assertEquals(1L, s.stats().get(m("deeper", "()V")).thrownHere().get("java.lang.IllegalStateException"));
+        assertTrue(s.stats().get(m("thrower", "()V")).thrownHere().isEmpty(), "propagated, not thrown");
+        assertEquals(1L, s.stats().get(m("exceptions", "()V")).caught().get("java.lang.IllegalStateException"));
         assertNotNull(s.graph().edge(m("exceptions", "()V"), m("ok", "()V")));
 
         StringWriter text = new StringWriter();

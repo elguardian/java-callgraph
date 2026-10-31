@@ -47,6 +47,11 @@ class EndToEndIT {
                     void authorize() { }
                 }
                 class Store {
+                    static java.io.InputStream open(java.io.File f) throws java.io.IOException {
+                        java.io.InputStream in = new java.io.FileInputStream(f);
+                        if (f.length() == 0) { return null; }
+                        return in;
+                    }
                     static void write() { }
                     static void read() { }
                     static void neverCalled() { }
@@ -79,6 +84,19 @@ class EndToEndIT {
         Run runtime = StaticCommandTest.run("query", "guard", "--trace", out.toString(), "--edges", "dynamic",
                 "--from", "e.Main.main", "--to", "e.Store.write", "--through", "e.Service.admin");
         assertEquals(0, runtime.code(), runtime.out() + runtime.err());
+    }
+
+    @Test
+    void analyzeReportsFindingsAndFailsTheBuildOnRequest() {
+        Run r = StaticCommandTest.run("analyze", "--app", appJar.toString(), "--trace", out.toString());
+        assertEquals(0, r.code(), r.err());
+        assertTrue(r.out().contains("resource.leak"), r.out());
+        assertTrue(r.out().contains("e.Store.open(java.io.File)"), r.out());
+        Run failing = StaticCommandTest.run("analyze", "--app", appJar.toString(), "--detector", "resources",
+                "--fail-on", "medium");
+        assertEquals(AnalyzeCommand.FINDINGS, failing.code(), failing.out());
+        Run bogus = StaticCommandTest.run("analyze", "--app", appJar.toString(), "--detector", "nope");
+        assertEquals(1, bogus.code());
     }
 
     @Test

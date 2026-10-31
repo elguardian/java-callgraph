@@ -18,7 +18,7 @@ and the phase-by-phase roadmap.
 | `javacg-rt` | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
 | `javacg-agent` | Java agent, packaged as `javacg-agent/target/javacg-agent.jar` |
 | `javacg-static` | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
-| `javacg-analyze` | Merged static + runtime model, graph queries, gap report, detectors |
+| `javacg-analyze` | Merged static + runtime model, graph queries, gap report, bug detectors |
 | `javacg-cli` | Command line front end, packaged as `javacg-cli/target/javacg.jar` |
 | `javacg-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
 
@@ -178,6 +178,55 @@ method, i.e. that the guard is a caller on the stack, and exits with code 3 prin
 counterexample otherwise, so it can fail a CI build. It works on the call graph, which has
 no notion of order within a method body: a check made by the same method just *before* the
 guarded call (`check(); delete();`) is a sibling, not a caller, and does not count.
+
+## Bug detectors
+
+```
+java -jar javacg.jar analyze --app app.war --lib deps.jar --trace /tmp/javacg \
+     [--detector resources --detector nulls ...] [--min-severity low] [--fail-on high]
+```
+
+Each finding has a severity (how bad if real) and a confidence (how likely it is real).
+Findings backed by a recording are marked *confirmed at runtime* and listed first.
+`--fail-on <severity>` exits with code 4 when such findings exist, for CI.
+
+| Detector | Rule | Needs | What it reports |
+|----------|------|-------|-----------------|
+| `nulls` | `null.dereference` | static | a value that is always null is dereferenced |
+| | `null.dereference-after-check` | static | a value compared with null is dereferenced on the path where it is null |
+| | `null.dereference-possible` | static | a `null` assigned on some path reaches a dereference |
+| `resources` | `resource.leak` | static | an `AutoCloseable` the method opened is still open at a `return` |
+| | `resource.leak-on-exception` | static | it is not closed if a later call throws (no try/finally) |
+| `exceptions` | `exception.swallowed` | static | a catch block neither reads nor rethrows the exception |
+| | `exception.interrupt-ignored` | static | `InterruptedException` caught without restoring the interrupt or rethrowing |
+| | `exception.cause-lost` | static | a new exception is thrown from a catch block without the caught one as cause |
+| | `runtime.unexpected-exception` | runtime | an NPE, `ClassCastException`, index error, `ConcurrentModificationException`, `StackOverflowError`, ... left an application method |
+| `locks` | `deadlock.lock-order` | runtime (`locks=true`) | two locks taken in opposite orders by code that ran |
+| | `deadlock.static-lock-order` | static | lock types taken in opposite orders along static call paths |
+| | `deadlock.nested-same-type` | static | two parameters of the same type locked one inside the other (`transfer(from, to)`) |
+| `recursion` | `recursion.deep` | runtime | a method recursed 200+ levels deep |
+| | `recursion.cycle` | static | mutual recursion (informational) |
+| `dead-code` | `dead.private-method` | static | a private method nothing calls, statically or at runtime |
+
+Runtime data strengthens static findings: a null dereference in a method that threw an NPE,
+or a swallowed exception that was actually caught at runtime, gets high confidence and the
+observation as evidence.
+
+How the static detectors work, and their limits:
+
+* `nulls`, `resources` and `exceptions` are intraprocedural data-flow analyses over the
+  bytecode. Values coming from parameters, fields and method results are unknown, so only
+  nulls and resources the method itself produces are reported.
+* A resource is no longer the method's responsibility once it is returned, stored in a field
+  or array, captured by a lambda or passed to another method. Decorators
+  (`new BufferedReader(reader)`) are only tracked when they wrap a resource the same method
+  opened, and closing either the decorator or the wrapped resource closes both.
+* A catch variable named `ignored`/`ignore*`/`expected` marks a swallow as intentional, but
+  javac drops the variable name of an empty catch block from the class file, so this only
+  works when the block has a statement.
+* The static lock analysis abstracts locks by type (`instance of C`, `field C.f`,
+  `class C`); a reported cycle may involve different instances. Runtime lock-order findings
+  are about real objects.
 
 ## WildFly / JBoss EAP
 

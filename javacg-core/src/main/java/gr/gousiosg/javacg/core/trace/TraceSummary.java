@@ -28,6 +28,8 @@ public final class TraceSummary {
         long selfNanos;
         int maxRecursion;
         final Map<String, Long> exceptions = new TreeMap<>();
+        final Map<String, Long> thrownHere = new TreeMap<>();
+        final Map<String, Long> caught = new TreeMap<>();
 
         public long calls() {
             return calls;
@@ -51,6 +53,36 @@ public final class TraceSummary {
         /** Exceptional exits by exception class. */
         public Map<String, Long> exceptions() {
             return Collections.unmodifiableMap(exceptions);
+        }
+
+        /**
+         * Exceptional exits where no instrumented callee threw the same exception class just
+         * before: thrown by this method, or by uninstrumented code it called.
+         */
+        public Map<String, Long> thrownHere() {
+            return Collections.unmodifiableMap(thrownHere);
+        }
+
+        /** Exceptions thrown by an instrumented callee that this method caught (it carried on). */
+        public Map<String, Long> caught() {
+            return Collections.unmodifiableMap(caught);
+        }
+
+        void add(MethodStats o) {
+            calls += o.calls;
+            totalNanos += o.totalNanos;
+            selfNanos += o.selfNanos;
+            maxRecursion = Math.max(maxRecursion, o.maxRecursion);
+            o.exceptions.forEach((k, v) -> exceptions.merge(k, v, Long::sum));
+            o.thrownHere.forEach((k, v) -> thrownHere.merge(k, v, Long::sum));
+            o.caught.forEach((k, v) -> caught.merge(k, v, Long::sum));
+        }
+
+        /** Sum of several recordings' statistics for one method. */
+        public static MethodStats sum(Iterable<MethodStats> all) {
+            MethodStats total = new MethodStats();
+            all.forEach(total::add);
+            return total;
         }
     }
 
@@ -95,8 +127,18 @@ public final class TraceSummary {
                 st.selfNanos += Math.max(0, total - frame.childNanos());
                 onStack.get(thread).merge(frame.method(), -1, Integer::sum);
                 if (how == CallStacks.Exit.EXCEPTION) {
-                    st.exceptions.merge(recording.className(exceptionClass), 1L, Long::sum);
+                    String type = recording.className(exceptionClass);
+                    st.exceptions.merge(type, 1L, Long::sum);
+                    if (frame.pendingException() != exceptionClass) {
+                        st.thrownHere.merge(type, 1L, Long::sum);
+                    }
                 }
+            }
+
+            @Override
+            public void onCaught(long thread, CallStacks.Frame frame, int exceptionClass) {
+                s.stats(recording.method(frame.method())).caught.merge(recording.className(exceptionClass), 1L,
+                        Long::sum);
             }
         });
         recording.replay(stacks);

@@ -5,8 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -28,6 +30,7 @@ public final class Model {
     private final CallGraph graph = new CallGraph();
     private final Set<MethodId> instrumented = new HashSet<>();
     private final Set<MethodId> executed = new HashSet<>();
+    private final Map<MethodId, TraceSummary.MethodStats> runtimeStats = new HashMap<>();
 
     private Model(StaticResult statics, List<TraceSummary> traces) {
         this.statics = statics;
@@ -40,6 +43,9 @@ public final class Model {
             instrumented.addAll(t.recording().instrumentedMethods());
             executed.addAll(t.stats().keySet());
         }
+        Map<MethodId, List<TraceSummary.MethodStats>> byMethod = new HashMap<>();
+        traces.forEach(t -> t.stats().forEach((m, st) -> byMethod.computeIfAbsent(m, k -> new ArrayList<>()).add(st)));
+        byMethod.forEach((m, list) -> runtimeStats.put(m, TraceSummary.MethodStats.sum(list)));
     }
 
     public static Model of(StaticResult statics, List<TraceSummary> traces) {
@@ -102,6 +108,16 @@ public final class Model {
     /** Methods that ran in any recording. */
     public Set<MethodId> executed() {
         return Collections.unmodifiableSet(executed);
+    }
+
+    /** Runtime statistics of a method summed over all recordings, or null if it never ran. */
+    public TraceSummary.MethodStats runtime(MethodId m) {
+        return runtimeStats.get(m);
+    }
+
+    /** Runtime statistics of every method that ran. */
+    public Map<MethodId, TraceSummary.MethodStats> runtime() {
+        return Collections.unmodifiableMap(runtimeStats);
     }
 
     public boolean hasStatic() {

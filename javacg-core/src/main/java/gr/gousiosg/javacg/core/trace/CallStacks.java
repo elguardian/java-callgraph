@@ -30,6 +30,7 @@ public final class CallStacks implements TraceListener {
         private final long enterNanos;
         private long childNanos;
         private String args;
+        private int pendingException;
 
         Frame(int method, long enterNanos) {
             this.method = method;
@@ -53,6 +54,15 @@ public final class CallStacks implements TraceListener {
         public String args() {
             return args;
         }
+
+        /**
+         * Exception class id of the last callee that exited by throwing, until this frame does
+         * anything else; 0 if none. In {@link Listener#onExit} for {@link Exit#EXCEPTION}, a
+         * value equal to the frame's own exception class means it was propagated, not thrown here.
+         */
+        public int pendingException() {
+            return pendingException;
+        }
     }
 
     /** Receives reconstructed frames. All methods are optional. */
@@ -74,6 +84,10 @@ public final class CallStacks implements TraceListener {
 
         default void onLock(long thread, List<Frame> stack, int identityHash, int lockClass, long nanos,
                 boolean acquire) {
+        }
+
+        /** A callee of {@code frame} threw and {@code frame} carried on: it caught the exception. */
+        default void onCaught(long thread, Frame frame, int exceptionClass) {
         }
 
         default void onEnd() {
@@ -103,6 +117,9 @@ public final class CallStacks implements TraceListener {
     @Override
     public void enter(long thread, int method, long nanos) {
         List<Frame> stack = stack(thread);
+        if (!stack.isEmpty()) {
+            caught(thread, stack.get(stack.size() - 1));
+        }
         Frame f = new Frame(method, nanos);
         listener.onEnter(thread, f, stack);
         stack.add(f);
@@ -173,10 +190,24 @@ public final class CallStacks implements TraceListener {
     }
 
     private void finish(long thread, Frame f, List<Frame> stack, Exit how, long nanos, int exceptionClass) {
+        if (how == Exit.NORMAL || how == Exit.EXCEPTION && f.pendingException != exceptionClass) {
+            caught(thread, f);
+        }
         if (!stack.isEmpty()) {
-            stack.get(stack.size() - 1).childNanos += nanos - f.enterNanos;
+            Frame parent = stack.get(stack.size() - 1);
+            parent.childNanos += nanos - f.enterNanos;
+            if (how == Exit.EXCEPTION) {
+                parent.pendingException = exceptionClass;
+            }
         }
         listener.onExit(thread, f, stack, how, nanos, exceptionClass);
+    }
+
+    private void caught(long thread, Frame f) {
+        if (f.pendingException != 0) {
+            listener.onCaught(thread, f, f.pendingException);
+            f.pendingException = 0;
+        }
     }
 
     private List<Frame> stack(long thread) {

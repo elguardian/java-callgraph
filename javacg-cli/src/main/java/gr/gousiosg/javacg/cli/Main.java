@@ -11,7 +11,7 @@ import java.util.Map;
 public final class Main {
 
     private static final List<Command> COMMANDS = List.of(new StaticCommand(), new TraceCommand(), new MergeCommand(),
-            new QueryCommand());
+            new QueryCommand(), new AnalyzeCommand());
 
     private Main() {
     }

@@ -19,6 +19,7 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
  * Instruction-level control flow graph of one method. Node {@code i} is
  * {@code method.instructions.get(i)}; labels, line numbers and frames are nodes too (with a
  * single fall-through successor), which keeps indices aligned with the {@code InsnList}.
+ * Only instructions that can throw (see {@link #canThrow(int)}) have exception edges.
  */
 public final class ControlFlowGraph {
 
@@ -74,8 +75,10 @@ public final class ControlFlowGraph {
             int end = insns.indexOf(tcb.end);
             int target = insns.indexOf(tcb.handler);
             for (int i = start; i < end; i++) {
-                if (insns.get(i).getOpcode() >= 0) {
-                    handlers.get(i).add(new Handler(target, tcb));
+                List<Handler> hs = handlers.get(i);
+                // the JVM takes the first matching entry: nothing after a catch-all is reachable
+                if (canThrow(insns.get(i).getOpcode()) && hs.stream().noneMatch(h -> catchesAll(h.block()))) {
+                    hs.add(new Handler(target, tcb));
                 }
             }
         }
@@ -99,7 +102,10 @@ public final class ControlFlowGraph {
         return successors[i];
     }
 
-    /** Exception handlers covering instruction {@code i}, in exception-table order. */
+    /**
+     * Exception handlers covering instruction {@code i}, in exception-table order, up to and
+     * including the first catch-all.
+     */
     public List<Handler> handlers(int i) {
         return Collections.unmodifiableList(handlers.get(i));
     }
@@ -131,6 +137,36 @@ public final class ControlFlowGraph {
         AbstractInsnNode insn = insn(i);
         return insn instanceof JumpInsnNode j && insn.getOpcode() != Opcodes.GOTO
                 && method.instructions.indexOf(j.label) == to && to != i + 1;
+    }
+
+    /**
+     * Whether an instruction can raise an exception. Local loads/stores, constants, stack
+     * manipulation, non-dividing arithmetic, conversions, comparisons, jumps and returns cannot
+     * (returns are treated as non-throwing although a synchronized method's return could in
+     * principle raise IllegalMonitorStateException); pseudo-instructions never do.
+     */
+    static boolean canThrow(int op) {
+        if (op < 0) {
+            return false;
+        }
+        if (op == Opcodes.IDIV || op == Opcodes.LDIV || op == Opcodes.IREM || op == Opcodes.LREM) {
+            return true;
+        }
+        if (op >= Opcodes.IALOAD && op <= Opcodes.SALOAD || op >= Opcodes.IASTORE && op <= Opcodes.SASTORE) {
+            return true; // array access
+        }
+        if (op <= Opcodes.ALOAD || op >= Opcodes.ISTORE && op <= Opcodes.ASTORE) {
+            return op == Opcodes.LDC; // constants and local variable access, except class constants
+        }
+        if (op >= Opcodes.POP && op <= Opcodes.LXOR || op >= Opcodes.IINC && op <= Opcodes.RETURN
+                || op == Opcodes.IFNULL || op == Opcodes.IFNONNULL) {
+            return false; // stack, arithmetic, conversion, comparison, jump, switch, return
+        }
+        return true; // field access, invoke, new, arrays, athrow, checkcast, monitors, ...
+    }
+
+    private static boolean catchesAll(TryCatchBlockNode tcb) {
+        return tcb.type == null || tcb.type.equals("java/lang/Throwable");
     }
 
     private static int[] distinct(int a, int b) {

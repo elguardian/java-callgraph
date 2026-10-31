@@ -37,6 +37,14 @@ public final class FlowAnalysis<V extends Value> {
                 FlowFrame<V> edge) {
         }
 
+        /**
+         * Whether control can continue to the normal successors of {@code insn}; return false
+         * after a call known never to return normally.
+         */
+        default boolean fallsThrough(int index, AbstractInsnNode insn, FlowFrame<V> after) {
+            return true;
+        }
+
         /** Called with the state flowing into an exception handler (stack holds the exception). */
         default void onException(int index, AbstractInsnNode insn, ControlFlowGraph.Handler handler,
                 FlowFrame<V> before, FlowFrame<V> edge) {
@@ -93,6 +101,9 @@ public final class FlowAnalysis<V extends Value> {
                 }
             }
             hooks.afterExecute(i, insn, before, after);
+            if (!hooks.fallsThrough(i, insn, after)) {
+                continue;
+            }
 
             int[] succ = cfg.successors(i);
             boolean conditional = succ.length > 1 && insn.getType() == AbstractInsnNode.JUMP_INSN;
