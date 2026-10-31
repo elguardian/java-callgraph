@@ -95,6 +95,16 @@ class EndToEndIT {
         Run failing = StaticCommandTest.run("analyze", "--app", appJar.toString(), "--detector", "resources",
                 "--fail-on", "medium");
         assertEquals(AnalyzeCommand.FINDINGS, failing.code(), failing.out());
+        Path sarif = out.resolveSibling("report.sarif");
+        Run withSarif = StaticCommandTest.run("analyze", "--app", appJar.toString(), "--trace", out.toString(),
+                "--sarif", sarif.toString(), "--source-root", "src/main/java");
+        assertEquals(0, withSarif.code(), withSarif.err());
+        try {
+            String text = Files.readString(sarif);
+            assertTrue(text.contains("\"uri\": \"src/main/java/e/Main.java\""), text);
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
         Run bogus = StaticCommandTest.run("analyze", "--app", appJar.toString(), "--detector", "nope");
         assertEquals(1, bogus.code());
     }

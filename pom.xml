@@ -26,6 +26,7 @@
     <module>javacg-agent</module>
     <module>javacg-analyze</module>
     <module>javacg-cli</module>
+    <module>javacg-maven-plugin</module>
   </modules>
 
   <properties>
@@ -33,6 +34,7 @@
     <maven.compiler.release>17</maven.compiler.release>
     <asm.version>9.11.1</asm.version>
     <junit.version>6.1.3</junit.version>
+    <maven.api.version>3.9.16</maven.api.version>
   </properties>
 
   <dependencyManagement>
@@ -152,6 +154,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
           <version>3.16.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>3.2.0</version>
         </plugin>
       </plugins>
     </pluginManagement>

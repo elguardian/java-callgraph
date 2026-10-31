@@ -20,6 +20,7 @@ and the phase-by-phase roadmap.
 | `javacg-static` | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
 | `javacg-analyze` | Merged static + runtime model, graph queries, gap report, bug detectors |
 | `javacg-cli` | Command line front end, packaged as `javacg-cli/target/javacg.jar` |
+| `javacg-maven-plugin` | `prepare-agent` and `analyze` goals for `mvn verify` |
 | `javacg-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
 
 ## Build
@@ -208,6 +209,11 @@ Findings backed by a recording are marked *confirmed at runtime* and listed firs
 | | `recursion.cycle` | static | mutual recursion (informational) |
 | `dead-code` | `dead.private-method` | static | a private method nothing calls, statically or at runtime |
 
+`--sarif report.sarif --source-root src/main/java` additionally writes SARIF 2.1.0 (or use
+`--format sarif`), which GitHub code scanning, IDEs and CI dashboards read. Each result has
+the source file and line, the method as a logical location, related locations, javacg's
+severity/confidence and the runtime evidence, and a line-independent fingerprint.
+
 Runtime data strengthens static findings: a null dereference in a method that threw an NPE,
 or a swallowed exception that was actually caught at runtime, gets high confidence and the
 observation as evidence.
@@ -227,6 +233,61 @@ How the static detectors work, and their limits:
 * The static lock analysis abstracts locks by type (`instance of C`, `field C.f`,
   `class C`); a reported cycle may involve different instances. Runtime lock-order findings
   are about real objects.
+
+## Maven plugin
+
+`prepare-agent` puts the agent argument in the `javacg.argLine` property; tests run under the
+agent; `analyze` (bound to `verify`) analyzes `target/classes` with the runtime classpath as
+libraries, loads the recordings, and writes `target/javacg-report.txt` and
+`target/javacg-report.sarif`.
+
+```xml
+<plugin>
+  <groupId>gr.gousiosg</groupId>
+  <artifactId>javacg-maven-plugin</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <configuration>
+    <includes>
+      <include>com\.acme\..*</include>
+    </includes>
+    <failOn>high</failOn>               <!-- optional: break the build -->
+  </configuration>
+  <executions>
+    <execution>
+      <goals>
+        <goal>prepare-agent</goal>
+        <goal>analyze</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
+<plugin>
+  <artifactId>maven-surefire-plugin</artifactId>
+  <configuration>
+    <argLine>${javacg.argLine}</argLine>
+  </configuration>
+</plugin>
+```
+
+| `prepare-agent` parameter | Default | |
+|---------------------------|---------|-|
+| `includes` / `excludes` | — | class regexes (`incl=` / `excl=`) |
+| `outputDirectory` | `target/javacg` | recordings; cleaned first unless `clean=false` |
+| `record`, `args`, `locks`, `jmx` | `startup`, `none`, `true`, `off` | agent options |
+| `jbossModules` | `false` | also add `-Djboss.modules.system.pkgs=org.jboss.byteman,gr.gousiosg.javacg.rt` |
+| `propertyName` | `javacg.argLine` | property receiving the JVM arguments (`javacg.agentJar` holds the jar path) |
+
+| `analyze` parameter | Default | |
+|---------------------|---------|-|
+| `classesDirectory` | `target/classes` | application classes |
+| `useLibraries` | `true` | runtime classpath as `--lib` |
+| `recordings` | `target/javacg` | static analysis only if absent |
+| `detectors` | all | detector ids |
+| `minSeverity` / `failOn` | `low` / — | `-Djavacg.failOn=high` on the command line works too |
+| `sarifFile` / `textFile` | `target/javacg-report.sarif` / `.txt` | |
+| `sourceRoot` | first compile source root | SARIF path prefix |
+
+All parameters can be skipped with `-Djavacg.skip`.
 
 ## WildFly / JBoss EAP
 
@@ -267,6 +328,29 @@ Pass the same arguments through the container's `javaVmArguments`:
 
 With `record=manual`, each test can scope a recording to itself by calling `Recorder.start` /
 `Recorder.stop` in the container (`@Before`/`@After`), or remotely through the MBean.
+
+With the Maven plugin, let `prepare-agent` build the arguments (`<jbossModules>true</jbossModules>`,
+`<jmx>auto</jmx>`) and hand them to the container through a system property, which
+`arquillian.xml` can reference:
+
+```xml
+<!-- pom.xml -->
+<plugin>
+  <artifactId>maven-failsafe-plugin</artifactId>
+  <configuration>
+    <systemPropertyVariables>
+      <javacg.argLine>${javacg.argLine}</javacg.argLine>
+    </systemPropertyVariables>
+  </configuration>
+</plugin>
+
+<!-- arquillian.xml -->
+<property name="javaVmArguments">${server.jvm.args} ${javacg.argLine}</property>
+```
+
+`analyze` then runs in `verify`, after the Arquillian tests. The WildFly setup is documented
+from WildFly's class-loading rules but has not been run against a live server as part of
+this project's test suite.
 
 Instrument only the subsystem packages you need: every instrumented method adds a few
 nanoseconds per call and a trace record.

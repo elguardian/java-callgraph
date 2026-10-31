@@ -3,6 +3,18 @@
 Goal: instrument Java programs (primarily WildFly under Arquillian) and combine the
 runtime traces with static analysis of the bytecode to find bugs.
 
+## Status
+
+All phases are implemented on the `v2` branch, one commit per phase. Not yet done:
+
+* No automated test against a live WildFly/Arquillian setup; the integration tests use
+  plain forked JVMs.
+* The Maven plugin is verified by hand on a sample project, not by `maven-invoker-plugin`.
+* The static detectors are intraprocedural (except lock order); interprocedural null and
+  resource tracking would need method summaries.
+* `guard` queries cannot express "check() is called before act() in the same method";
+  that needs an ordering analysis inside method bodies.
+
 ## Decisions
 
 | Topic | Decision |
