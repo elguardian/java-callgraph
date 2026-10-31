@@ -10,7 +10,7 @@ import java.util.Map;
 /** Entry point of {@code java -jar javacg.jar <command> ...}. */
 public final class Main {
 
-    private static final List<Command> COMMANDS = List.of(new StaticCommand());
+    private static final List<Command> COMMANDS = List.of(new StaticCommand(), new TraceCommand());
 
     private Main() {
     }

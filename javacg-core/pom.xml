@@ -11,9 +11,13 @@
 
   <artifactId>javacg-core</artifactId>
   <name>javacg-core</name>
-  <description>Shared model: method identifiers, call graphs with provenance, serialization</description>
+  <description>Shared model: method identifiers, call graphs with provenance, serialization, trace reader</description>
 
   <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>javacg-rt</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>

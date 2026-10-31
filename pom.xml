@@ -20,8 +20,10 @@
 
   <modules>
     <module>javacg-testkit</module>
+    <module>javacg-rt</module>
     <module>javacg-core</module>
     <module>javacg-static</module>
+    <module>javacg-agent</module>
     <module>javacg-cli</module>
   </modules>
 
@@ -69,6 +71,11 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>javacg-testkit</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>javacg-rt</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
