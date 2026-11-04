@@ -92,7 +92,7 @@ final class AnalysisTools {
                             throw new ToolException("Input does not exist: " + p);
                         }
                     }
-                    return summary(models.load(in), true);
+                    return summary(models.load(in, args.notifier()), true);
                 });
     }
 

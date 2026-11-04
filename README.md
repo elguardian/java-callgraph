@@ -382,6 +382,29 @@ returned directory as `trace` and the application as `app`.
 * Recording directories are on the target's file system; `load_model` must see the same paths.
 * Logging goes to stderr (`-Dorg.slf4j.simpleLogger.defaultLogLevel=debug` for more).
 
+### Notifications
+
+The server declares the `tools` and `logging` capabilities.
+
+* **Progress** (`notifications/progress`): when a `tools/call` request carries
+  `_meta.progressToken`, these tools report while they run:
+
+  | Tool | Progress |
+  |------|----------|
+  | `maven_run` | each reactor module as Maven starts it (`building core 1.0 [2/23]`) |
+  | `load_model` | static analysis, reading recordings, merging |
+  | `watch_method`, `jfr_analyze` (with `pid`) | seconds watched or recorded |
+  | `thread_dump_analyze`, `heap_histogram` (with `pid`) | each dump or histogram taken |
+  | `daily_status` | each Jira, GitHub or GitLab source read |
+
+* **Log messages** (`notifications/message`, logger: the tool name): background jobs
+  (`bisect_run`, and `watch_method` / `jfr_analyze` with `background=true`) send each progress line
+  at `info` (bisect steps, for example) and their end at `notice` (done) or `error` (failed), so a
+  client can learn that a job finished without polling `job_status`. `logging/setLevel` filters
+  them; the default is `info`.
+
+Server diagnostics (startup warnings, SDK logging) stay on stderr.
+
 ### Configuration and plugins
 
 The server keeps its state under `~/.mcp-set-tools` (or `$MCPSETTOOLS_HOME`):
@@ -588,6 +611,10 @@ containing `com.example.tools.EchoProvider`. Drop the jar into `~/.mcp-set-tools
   it throws `ToolException` for an error the client should see.
 * `ToolArgs` reads typed arguments; `Results.page` and `Results.table` give list results paging
   and `table_format`.
+* `args.progress(done, total, message)` reports progress of the call (sent only when the client
+  asked for it); `args.notifier().log(level, message)` writes to the client's log. Start background
+  work with `context.jobs().start(name, args.notifier(), job -> ...)`: `job.progress(line)` and the
+  job's end then reach the client's log too.
 * `ToolContext` gives `jobs()` for background work (`job_status` polls it), `home()` for state
   and config, `secret(name)` for tokens (environment, then system property: never take tokens
   as tool arguments) and `log()` (stderr; stdout carries the protocol).

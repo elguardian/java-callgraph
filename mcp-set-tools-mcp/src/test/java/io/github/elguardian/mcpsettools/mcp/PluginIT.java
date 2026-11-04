@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -39,7 +40,11 @@ class PluginIT {
                 public List<Tool> tools(ToolContext context) {
                     return List.of(new Tool("echo", "Echo", "Returns its text, reversed", true,
                             Schema.object().string("text", "Text to reverse", true).build(),
-                            args -> new StringBuilder(args.string("text", "")).reverse().toString()));
+                            args -> {
+                                args.progress(1, 2, "half way");
+                                args.notifier().log(Notifier.Level.WARNING, "echoing " + args.string("text", ""));
+                                return new StringBuilder(args.string("text", "")).reverse().toString();
+                            }));
                 }
                 public String instructions() { return "Echo: echo reverses text."; }
             }
@@ -65,7 +70,10 @@ class PluginIT {
         StdioClientTransport transport = new StdioClientTransport(ServerParameters.builder(java)
                 .args("-jar", server.toString()).addEnvVar("MCPSETTOOLS_HOME", home.toString()).build(),
                 McpJsonDefaults.getMapper());
-        McpSyncClient client = McpClient.sync(transport).requestTimeout(Duration.ofSeconds(60)).build();
+        List<McpSchema.ProgressNotification> progress = new CopyOnWriteArrayList<>();
+        List<McpSchema.LoggingMessageNotification> logs = new CopyOnWriteArrayList<>();
+        McpSyncClient client = McpClient.sync(transport).requestTimeout(Duration.ofSeconds(60))
+                .progressConsumer(progress::add).loggingConsumer(logs::add).build();
         try {
             McpSchema.InitializeResult init = client.initialize();
             assertTrue(init.instructions().contains("Echo: echo reverses text."), init.instructions());
@@ -77,10 +85,26 @@ class PluginIT {
             assertFalse(names.contains("maven_run"), names.toString());
             assertFalse(names.contains("daily_status"), names.toString());
 
+            assertTrue(init.capabilities().logging() != null, "logging capability");
             McpSchema.CallToolResult r = client.callTool(McpSchema.CallToolRequest.builder("echo")
-                    .arguments(Map.of("text", "abc")).build());
+                    .arguments(Map.of("text", "abc")).progressToken("t1").build());
             assertFalse(Boolean.TRUE.equals(r.isError()));
             assertEquals("cba", ((McpSchema.TextContent) r.content().get(0)).text());
+
+            // notifications travel ahead of the response on the same stream; the client hands them over on its own thread
+            long deadline = System.nanoTime() + 10_000_000_000L;
+            while ((progress.isEmpty() || logs.isEmpty()) && System.nanoTime() < deadline) {
+                Thread.sleep(50);
+            }
+            assertEquals(1, progress.size(), progress.toString());
+            assertEquals("t1", progress.get(0).progressToken());
+            assertEquals(1.0, progress.get(0).progress());
+            assertEquals(2.0, progress.get(0).total());
+            assertEquals("half way", progress.get(0).message());
+            assertEquals(1, logs.size(), logs.toString());
+            assertEquals(McpSchema.LoggingLevel.WARNING, logs.get(0).level());
+            assertEquals("echo", logs.get(0).logger());
+            assertEquals("echoing abc", logs.get(0).data());
         } finally {
             client.closeGracefully();
         }

@@ -1,5 +1,6 @@
 package io.github.elguardian.mcpsettools.callgraph.tool;
 
+import io.github.elguardian.mcpsettools.tool.Notifier;
 import io.github.elguardian.mcpsettools.tool.ToolArgs;
 import io.github.elguardian.mcpsettools.tool.ToolException;
 import java.io.IOException;
@@ -39,6 +40,10 @@ final class Models {
     private final AtomicInteger next = new AtomicInteger(1);
 
     Loaded load(Inputs in) throws IOException {
+        return load(in, Notifier.NONE);
+    }
+
+    Loaded load(Inputs in, Notifier progress) throws IOException {
         if (in.app().isEmpty() && in.trace().isEmpty()) {
             throw new ToolException("Give 'app' inputs, 'trace' recordings, or both");
         }
@@ -46,9 +51,13 @@ final class Models {
         List<String> warnings = new ArrayList<>();
         StaticResult statics = null;
         if (!in.app().isEmpty()) {
+            progress.progress(0, 3, "static analysis of " + in.app().size() + " input(s)");
             statics = StaticAnalyzer.create().app(in.app()).lib(in.lib()).algorithm(in.algorithm())
                     .jdkFallback(in.jdk()).run();
             warnings.addAll(statics.warnings());
+        }
+        if (!in.trace().isEmpty()) {
+            progress.progress(1, 3, "reading " + in.trace().size() + " recording(s)");
         }
         List<TraceSummary> traces = Model.loadRecordings(in.trace());
         for (TraceSummary t : traces) {
@@ -57,6 +66,7 @@ final class Models {
                         + "its tables may be incomplete");
             }
         }
+        progress.progress(2, 3, "merging");
         Model model = Model.of(statics, traces);
         String id = byId.values().stream().filter(l -> l.inputs().equals(in)).map(Loaded::id).findFirst()
                 .orElseGet(() -> "m" + next.getAndIncrement());

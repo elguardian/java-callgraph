@@ -39,13 +39,17 @@ public final class Jobs {
         volatile Instant ended;
         volatile boolean cancelRequested;
         Future<?> future;
+        final Notifier notifier;
 
-        Job(String id, String tool) {
+        Job(String id, String tool, Notifier notifier) {
             this.id = id;
             this.tool = tool;
+            this.notifier = notifier == null ? Notifier.NONE : notifier;
         }
 
+        /** A progress line for job_status, also sent to the client's log. */
         public void progress(String line) {
+            notifier.log(Notifier.Level.INFO, "job " + id + " (" + tool + "): " + line);
             synchronized (progress) {
                 progress.add(line);
                 if (progress.size() > 500) {
@@ -58,6 +62,11 @@ public final class Jobs {
             synchronized (progress) {
                 return List.copyOf(progress);
             }
+        }
+
+        /** Waits for the job to end; false on timeout. */
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+            return finished.await(timeout, unit);
         }
 
         public boolean cancelled() {
@@ -74,7 +83,15 @@ public final class Jobs {
     });
 
     public Job start(String tool, Work work) {
-        Job job = new Job("j" + next.getAndIncrement(), tool);
+        return start(tool, Notifier.NONE, work);
+    }
+
+    /**
+     * Runs {@code work} in the background. Its progress lines and its end (done, failed, cancelled)
+     * go to {@code notifier}'s log, so a client can learn the job finished without polling.
+     */
+    public Job start(String tool, Notifier notifier, Work work) {
+        Job job = new Job("j" + next.getAndIncrement(), tool, notifier);
         jobs.put(job.id, job);
         job.future = pool.submit(() -> {
             try {
@@ -95,10 +112,23 @@ public final class Jobs {
                 job.status = job.cancelRequested ? Status.CANCELLED : Status.FAILED;
             } finally {
                 job.ended = Instant.now();
+                announce(job);
                 job.finished.countDown();
             }
         });
         return job;
+    }
+
+    private static void announce(Job job) {
+        String head = "job " + job.id + " (" + job.tool + ") ";
+        switch (job.status) {
+            case DONE -> job.notifier.log(Notifier.Level.NOTICE,
+                    head + "done after " + seconds(job) + " s: call job_status for the result");
+            case FAILED -> job.notifier.log(Notifier.Level.ERROR, head + "failed after " + seconds(job) + " s: " + job.error);
+            case CANCELLED -> job.notifier.log(Notifier.Level.NOTICE, head + "cancelled");
+            default -> {
+            }
+        }
     }
 
     /** The reply of a tool that started a job. */

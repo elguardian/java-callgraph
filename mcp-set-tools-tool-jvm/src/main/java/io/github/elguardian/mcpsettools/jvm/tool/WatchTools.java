@@ -66,14 +66,14 @@ final class WatchTools {
                     }
                     String id = start(args, seconds);
                     if (args.bool("background", false)) {
-                        Jobs.Job job = jobs.start("watch_method", j -> {
+                        Jobs.Job job = jobs.start("watch_method", args.notifier(), j -> {
                             j.progress("watching " + args.require("method") + " for " + seconds + " s (watch " + id + ")");
-                            sleep(seconds, j);
+                            sleep(seconds, j, args);
                             return finish(args, id);
                         });
                         return Jobs.started(job, "The watch");
                     }
-                    sleep(seconds, null);
+                    sleep(seconds, null, args);
                     return finish(args, id);
                 });
     }
@@ -147,11 +147,18 @@ final class WatchTools {
         }
     }
 
-    private static void sleep(int seconds, Jobs.Job job) throws InterruptedException {
-        long end = System.nanoTime() + seconds * 1_000_000_000L;
+    private static void sleep(int seconds, Jobs.Job job, ToolArgs args) throws InterruptedException {
+        long start = System.nanoTime();
+        long end = start + seconds * 1_000_000_000L;
+        long reported = -1;
         while (System.nanoTime() < end) {
             if (job != null && job.cancelled()) {
                 throw new InterruptedException();
+            }
+            long s = (System.nanoTime() - start) / 1_000_000_000L;
+            if (s != reported) {
+                reported = s;
+                args.progress(s, seconds, "watching " + s + "/" + seconds + " s");
             }
             Thread.sleep(Math.min(500, Math.max(1, (end - System.nanoTime()) / 1_000_000)));
         }

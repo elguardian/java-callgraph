@@ -33,7 +33,9 @@ class McpServerIT {
         String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
         StdioClientTransport transport = new StdioClientTransport(
                 ServerParameters.builder(java).args("-jar", jar.toString()).build(), json);
-        McpSyncClient client = McpClient.sync(transport).requestTimeout(Duration.ofSeconds(60)).build();
+        List<McpSchema.ProgressNotification> progress = new java.util.concurrent.CopyOnWriteArrayList<>();
+        McpSyncClient client = McpClient.sync(transport).requestTimeout(Duration.ofSeconds(60))
+                .progressConsumer(progress::add).build();
         try {
             McpSchema.InitializeResult init = client.initialize();
             assertEquals("mcp-set-tools", init.serverInfo().name());
@@ -55,8 +57,16 @@ class McpServerIT {
                     .arguments(Map.of("format", "jira", "columns", List.of("a"), "rows", List.of(List.of("x")))).build());
             assertEquals("||a||\n|x|\n", text(table));
 
-            Map<String, Object> loaded = call(client, json, "load_model", Map.of("app", List.of(app.toString())));
-            assertEquals("m1", loaded.get("model_id"));
+            McpSchema.CallToolResult load = client.callTool(McpSchema.CallToolRequest.builder("load_model")
+                    .arguments(Map.of("app", List.of(app.toString()))).progressToken(7).build());
+            assertFalse(Boolean.TRUE.equals(load.isError()), () -> text(load));
+            assertEquals("m1", json.readValue(text(load), Map.class).get("model_id"));
+            long deadline = System.nanoTime() + 10_000_000_000L;
+            while (progress.size() < 2 && System.nanoTime() < deadline) {
+                Thread.sleep(50);
+            }
+            assertEquals(List.of("static analysis of 1 input(s)", "merging"),
+                    progress.stream().map(McpSchema.ProgressNotification::message).toList());
 
             Map<String, Object> guard = call(client, json, "check_guard", Map.of("model_id", "m1",
                     "from", "f.Main.main", "to", "f.Store.write", "through", "f.Service.admin"));

@@ -112,7 +112,7 @@ final class MavenTools {
                         }
                         mvnArgs.add("validate");
                         MavenRunner.Run run = runMaven(dir, mvnArgs, Duration.ofMinutes(5), false, null, Map.of(), null,
-                                false);
+                                false, null);
                         m.put("maven_order", run.build().reactorOrder());
                         if (run.exitCode() != 0) {
                             m.put("maven_errors", run.build().errors());
@@ -180,7 +180,8 @@ final class MavenTools {
                     Path logFile = args.has("log_file") ? ToolArgs.path(args.require("log_file")) : null;
                     MavenRunner.Run run = runMaven(dir, args.strings("args"),
                             Duration.ofSeconds(args.integer("timeout_seconds", 1800)), args.bool("offline", false),
-                            args.string("threads", null), env, logFile, true);
+                            args.string("threads", null), env, logFile, true,
+                            (i, n, module) -> args.progress(i - 1, n, "building " + module + " [" + i + "/" + n + "]"));
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("command", String.join(" ", run.command()));
                     m.put("exit_code", run.exitCode());
@@ -229,9 +230,10 @@ final class MavenTools {
     }
 
     static MavenRunner.Run runMaven(Path dir, List<String> args, Duration timeout, boolean offline, String threads,
-            Map<String, String> env, Path log, boolean timestamps) throws IOException, InterruptedException {
+            Map<String, String> env, Path log, boolean timestamps, MavenRunner.Progress progress)
+            throws IOException, InterruptedException {
         try {
-            return MavenRunner.run(new MavenRunner.Options(dir, args, timeout, offline, threads, env, log, timestamps));
+            return MavenRunner.run(new MavenRunner.Options(dir, args, timeout, offline, threads, env, log, timestamps), progress);
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new ToolException(e.getMessage());
         }

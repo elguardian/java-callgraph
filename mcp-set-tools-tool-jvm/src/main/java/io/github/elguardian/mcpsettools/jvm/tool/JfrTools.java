@@ -65,7 +65,7 @@ final class JfrTools {
                 args -> {
                     if (args.has("pid")) {
                         if (args.bool("background", false)) {
-                            Jobs.Job job = jobs.start("jfr_analyze", j -> {
+                            Jobs.Job job = jobs.start("jfr_analyze", args.notifier(), j -> {
                                 Path f = record(args, j);
                                 return analyze(f, args);
                             });
@@ -105,7 +105,14 @@ final class JfrTools {
             job.progress("recording " + pid + " for " + seconds + " s into " + file);
         }
         long deadline = System.nanoTime() + Duration.ofSeconds(seconds + 60L).toNanos();
-        Thread.sleep(seconds * 1000L);
+        for (int s = 0; s < seconds; s++) {
+            if (job != null && job.cancelled()) {
+                throw new InterruptedException();
+            }
+            args.progress(s, seconds + 1, "recording " + s + "/" + seconds + " s");
+            Thread.sleep(1000L);
+        }
+        args.progress(seconds, seconds + 1, "waiting for the recording file");
         long lastSize = -1;
         while (System.nanoTime() < deadline) {
             if (job != null && job.cancelled()) {

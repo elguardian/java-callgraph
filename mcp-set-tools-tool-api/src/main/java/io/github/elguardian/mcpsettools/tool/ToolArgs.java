@@ -11,9 +11,25 @@ import java.util.Map;
 public final class ToolArgs {
 
     private final Map<String, Object> values;
+    private final Notifier notifier;
 
     public ToolArgs(Map<String, Object> values) {
+        this(values, Notifier.NONE);
+    }
+
+    public ToolArgs(Map<String, Object> values, Notifier notifier) {
         this.values = values == null ? Map.of() : values;
+        this.notifier = notifier == null ? Notifier.NONE : notifier;
+    }
+
+    /** Progress and log messages to the client for this call. */
+    public Notifier notifier() {
+        return notifier;
+    }
+
+    /** Shorthand for {@code notifier().progress(done, total, message)}. */
+    public void progress(double done, double total, String message) {
+        notifier.progress(done, total, message);
     }
 
     public boolean has(String name) {

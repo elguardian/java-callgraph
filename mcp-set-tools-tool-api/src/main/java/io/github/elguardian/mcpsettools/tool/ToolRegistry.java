@@ -122,12 +122,17 @@ public final class ToolRegistry {
     }
 
     public Result call(String name, Map<String, Object> arguments) {
+        return call(name, arguments, Notifier.NONE);
+    }
+
+    /** Runs a tool; {@code notifier} receives its progress and log messages. */
+    public Result call(String name, Map<String, Object> arguments, Notifier notifier) {
         Tool tool = tools.get(name);
         if (tool == null) {
             return new Result(null, "Unknown tool " + name);
         }
         try {
-            return new Result(tool.handler().call(new ToolArgs(arguments)), null);
+            return new Result(tool.handler().call(new ToolArgs(arguments, notifier)), null);
         } catch (ToolException e) {
             return new Result(null, e.getMessage());
         } catch (NoSuchFileException e) {

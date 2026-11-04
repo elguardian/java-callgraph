@@ -3,9 +3,12 @@ package io.github.elguardian.mcpsettools.tool;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
@@ -80,6 +83,53 @@ class ToolRegistryTest {
         assertEquals(List.of("Use a."), r.instructions());
         assertTrue(r.call("z", Map.of()).isError());
         assertTrue(r.call("y", Map.of()).error().contains("y"), r.call("y", Map.of()).error());
+    }
+
+    private static Notifier recording(List<String> got) {
+        return new Notifier() {
+            @Override
+            public void progress(double done, double total, String message) {
+                got.add("progress " + done + "/" + total + " " + message);
+            }
+
+            @Override
+            public void log(Level level, String message) {
+                got.add(level + " " + message);
+            }
+        };
+    }
+
+    @Test
+    void theCallsNotifierReachesTheHandler() {
+        List<String> got = new ArrayList<>();
+        Tool t = new Tool("p", "p", "notifies", true, Schema.object().build(), args -> {
+            args.progress(1, 2, "half");
+            args.notifier().log(Notifier.Level.WARNING, "careful");
+            return "x";
+        });
+        ToolRegistry r = registry(Set.of(), provider("a", null, t));
+        assertEquals("x", r.call("p", Map.of(), recording(got)).value());
+        assertEquals(List.of("progress 1.0/2.0 half", "WARNING careful"), got);
+        assertEquals("x", r.call("p", Map.of()).value());
+    }
+
+    @Test
+    void jobsLogTheirProgressAndTheirEnd() throws Exception {
+        Jobs jobs = new Jobs();
+        List<String> got = Collections.synchronizedList(new ArrayList<>());
+        Jobs.Job ok = jobs.start("work", recording(got), job -> {
+            job.progress("step 1");
+            return "r";
+        });
+        Jobs.Job bad = jobs.start("work", recording(got), job -> {
+            throw new ToolException("broke");
+        });
+        assertTrue(ok.await(10, TimeUnit.SECONDS));
+        assertTrue(bad.await(10, TimeUnit.SECONDS));
+        assertTrue(got.contains("INFO job " + ok.id + " (work): step 1"), got.toString());
+        assertTrue(got.stream().anyMatch(l -> l.startsWith("NOTICE job " + ok.id + " (work) done after")), got.toString());
+        assertTrue(got.stream().anyMatch(l -> l.startsWith("ERROR job " + bad.id + " (work) failed") && l.endsWith("broke")),
+                got.toString());
     }
 
     @Test

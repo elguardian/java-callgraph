@@ -51,7 +51,7 @@ public final class McpMain {
         McpSyncServer server = McpServer.sync(transport)
                 .serverInfo("mcp-set-tools", version())
                 .instructions(bridge.instructions())
-                .capabilities(McpSchema.ServerCapabilities.builder().tools(false).build())
+                .capabilities(McpSchema.ServerCapabilities.builder().tools(false).logging().build())
                 .jsonMapper(json)
                 .tools(bridge.specifications())
                 .build();

@@ -117,6 +117,7 @@ final class GcTools {
                             if (i > 0) {
                                 Thread.sleep(Math.max(0, args.integer("interval_seconds", 30)) * 1000L);
                             }
+                            args.progress(i, count, "histogram " + (i + 1) + "/" + count);
                             String text;
                             try {
                                 text = args.bool("all_objects", false)

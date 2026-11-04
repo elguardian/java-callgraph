@@ -92,7 +92,7 @@ final class GitTools {
                     } catch (java.io.IOException e) {
                         throw new ToolException(e.getMessage());
                     }
-                    Jobs.Job job = jobs.start("bisect_run", j -> {
+                    Jobs.Job job = jobs.start("bisect_run", args.notifier(), j -> {
                         Bisect.Outcome o;
                         try {
                             o = Bisect.run(git, good, bad, oracle, maxSteps, j::progress, j::cancelled);

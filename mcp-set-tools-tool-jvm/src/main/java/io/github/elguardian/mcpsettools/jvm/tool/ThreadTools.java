@@ -54,7 +54,7 @@ final class ThreadTools {
                     List<ThreadDump> dumps = new ArrayList<>();
                     Map<String, Object> m = new LinkedHashMap<>();
                     if (args.has("pid")) {
-                        Path file = take(args.require("pid"), args.integer("count", 3), args.integer("interval_seconds", 5));
+                        Path file = take(args.require("pid"), args.integer("count", 3), args.integer("interval_seconds", 5), args);
                         m.put("dump_file", file.toString());
                         dumps.addAll(ThreadDumpParser.parse(file.getFileName().toString(), Files.readString(file)));
                     } else if (args.has("files")) {
@@ -76,7 +76,7 @@ final class ThreadTools {
                 });
     }
 
-    private static Path take(String pid, int count, int interval) throws Exception {
+    private static Path take(String pid, int count, int interval, ToolArgs args) throws Exception {
         if (count < 1 || count > 20) {
             throw new ToolException("'count' must be 1 to 20");
         }
@@ -85,6 +85,7 @@ final class ThreadTools {
             if (i > 0) {
                 Thread.sleep(Math.max(0, interval) * 1000L);
             }
+            args.progress(i, count, "thread dump " + (i + 1) + "/" + count);
             try {
                 all.append(Jcmd.run(pid, Duration.ofSeconds(60), "Thread.print", "-l")).append('\n');
             } catch (java.io.IOException | IllegalArgumentException | IllegalStateException e) {

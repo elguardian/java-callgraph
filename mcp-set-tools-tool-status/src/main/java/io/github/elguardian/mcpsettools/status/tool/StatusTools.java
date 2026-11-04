@@ -78,7 +78,9 @@ final class StatusTools {
                     }
                     Map<String, String> sources = new LinkedHashMap<>();
                     List<WorkItem> items = new ArrayList<>();
+                    int answered = 0;
                     for (Map.Entry<String, CompletableFuture<List<WorkItem>>> e : futures.entrySet()) {
+                        args.progress(answered++, futures.size(), "reading " + e.getKey());
                         try {
                             List<WorkItem> got = e.getValue().get(90, TimeUnit.SECONDS);
                             sources.put(e.getKey(), "ok, " + got.size() + " item(s)");
