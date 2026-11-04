@@ -9,7 +9,8 @@ All phases are implemented on the `v2` branch, one commit per phase, plus an MCP
 (`javacg-mcp`) over the analysis and live recording control, and developer tools
 (`javacg-devtools`: JUnit reports, Maven reactor/runs/logs, log queries, tables, thread
 timelines), and sustaining tools (thread dumps, GC logs, heap histograms, JFR, method watches,
-stack trace to version mapping, known issues with Jira search, bisect). Not yet done:
+stack trace to version mapping, known issues with Jira search, bisect), and a daily status of pending
+work across Jira, GitHub and GitLab. Not yet done:
 
 * No automated test against a live WildFly/Arquillian setup; the integration tests use
   plain forked JVMs.
@@ -24,6 +25,8 @@ stack trace to version mapping, known issues with Jira search, bisect). Not yet 
   line), not by compiling; Kotlin and Scala sources are not checked.
 * `watch_method` samples hold argument references until the call ends: values are rendered at
   exit, so arguments mutated by the method show their final state.
+* `daily_status` reads at most 100 items per source and 40 merge request details per GitLab
+  instance; GitHub mentions are searched for the last 14 days.
 * Log queries re-read the files on each call; JSON log lines (ECS, logstash) have no preset.
 * `guard` queries cannot express "check() is called before act() in the same method";
   that needs an ordering analysis inside method bodies.

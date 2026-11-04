@@ -449,6 +449,59 @@ Commits that do not compile, or whose build fails before the tests run, are skip
 or `verify`, not `install`, so the bisect builds do not replace artifacts in the local Maven
 repository.
 
+### Daily status
+
+`daily_status` gathers your pending work for the day: open Jira issues assigned to you, and
+open GitHub pull requests and GitLab merge requests that you wrote, where your review is
+requested, that are assigned to you or that mention you. It returns a markdown digest in three
+sections, plus the items as data:
+
+* **Needs you**, ordered by score:
+  * a review requested from you and not done since the last push;
+  * changes requested on your PR;
+  * new comments or reviews from others since your last action (bots ignored);
+  * failing CI or merge conflicts on your PR;
+  * an unanswered mention;
+  * your PR approved and green, ready to merge;
+  * Jira issues that are overdue, due within two days, Blocker or Critical, or have new comments.
+* **Waiting on others**: your PRs/MRs with nothing for you to do.
+* **In progress**: the remaining Jira issues.
+
+Items that changed since the previous run are marked **NEW**. The last run is kept in
+`~/.javacg/status-state.json` next to the config.
+
+Instances are listed in `~/.javacg/status.json` (or `$JAVACG_STATUS_CONFIG`). Tokens are named
+by environment variable and set in the MCP server's environment, never in the file:
+
+```json
+{
+  "jira":   [ { "url": "https://issues.redhat.com", "token_env": "JIRA_TOKEN" } ],
+  "github": [ { "api_url": "https://api.github.com", "token_env": "GITHUB_TOKEN" } ],
+  "gitlab": [ { "url": "https://gitlab.com", "token_env": "GITLAB_TOKEN" },
+              { "url": "https://gitlab.example.com", "token_env": "GITLAB_WORK_TOKEN", "name": "work",
+                "ignore_repos": ["sandbox/*"] } ]
+}
+```
+
+```
+claude mcp add javacg -e JIRA_TOKEN=... -e GITHUB_TOKEN=... -e GITLAB_TOKEN=... -e GITLAB_WORK_TOKEN=... \
+    -- java -jar /path/to/javacg-mcp.jar
+```
+
+The entries are:
+
+* **Jira:** `url`, `token_env`, and optionally `user_env` (Jira Cloud: email plus API token,
+  Basic auth) and `jql` (default: assigned to you and unresolved). A Data Center personal access
+  token is sent as Bearer.
+* **GitHub:** `api_url` (`https://api.github.com`, or `https://host/api/v3` for Enterprise) and a
+  token that can read the repositories. One GraphQL query covers all four searches.
+* **GitLab:** `url`, and a token with `read_api`. It uses merge request lists, todos (mentions),
+  and each MR's pipeline, approvals and discussions.
+
+Without a file, `JIRA_URL`/`JIRA_TOKEN`[/`JIRA_USER`], `GITHUB_TOKEN` (or `GH_TOKEN`) and
+`GITLAB_URL`/`GITLAB_TOKEN` are used. A source that fails (expired token, unreachable) is
+reported in the digest; the others still show.
+
 ## WildFly / JBoss EAP
 
 WildFly loads subsystems and deployments through JBoss Modules, whose class loaders only see

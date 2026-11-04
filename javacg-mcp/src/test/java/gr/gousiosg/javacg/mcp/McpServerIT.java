@@ -45,9 +45,9 @@ class McpServerIT {
                     "junit_compare", "log_query", "log_pattern", "maven_reactor", "maven_run", "maven_log", "timeline", "job_status",
                     "job_cancel", "thread_dump_analyze", "gc_log_analyze", "heap_histogram", "jfr_analyze",
                     "stacktrace_map", "bisect_run", "known_issue_match", "known_issue_add", "known_issue_import",
-                    "watch_method")),
+                    "watch_method", "daily_status")),
                     names.toString());
-            assertTrue(names.size() >= 41, names.toString());
+            assertTrue(names.size() >= 42, names.toString());
 
             // plain-text results (tables, diagrams) arrive unquoted
             McpSchema.CallToolResult table = client.callTool(McpSchema.CallToolRequest.builder("table_render")

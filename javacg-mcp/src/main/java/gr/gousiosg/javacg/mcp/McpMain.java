@@ -49,6 +49,9 @@ public final class McpMain {
             stacktrace_map (which version produced a trace, with source lines), known_issue_match (known \
             issues and Jira), bisect_run (the commit that broke a test). Long tools return a job_id: poll \
             job_status.
+            Daily work: daily_status lists open Jira issues assigned to the user and their open GitHub pull \
+            requests and GitLab merge requests (authored, review requested, assigned, mentioned), ordered by \
+            what needs them first, with new feedback since the last run.
             Output: tools returning lists take table_format (ascii, markdown, jira, slack, csv, tsv, \
             html); table_render formats any rows for pasting into Jira, Slack or a terminal.""";
 
