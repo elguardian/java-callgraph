@@ -207,7 +207,7 @@ final class JunitTools {
     }
 
     /** One line per failed test: what, where. */
-    private static Map<String, Object> failureLine(TestCase c, List<String> app) {
+    static Map<String, Object> failureLine(TestCase c, List<String> app) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("test", c.id());
         m.put("module", c.module());
