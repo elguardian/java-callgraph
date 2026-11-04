@@ -21,6 +21,7 @@ and the phase-by-phase roadmap.
 | `javacg-analyze` | Merged static + runtime model, graph queries, gap report, bug detectors |
 | `javacg-cli` | Command line front end, packaged as `javacg-cli/target/javacg.jar` |
 | `javacg-maven-plugin` | `prepare-agent` and `analyze` goals for `mvn verify` |
+| `javacg-mcp` | MCP server for AI assistants, packaged as `javacg-mcp/target/javacg-mcp.jar` |
 | `javacg-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
 
 ## Build
@@ -293,6 +294,56 @@ libraries, loads the recordings, and writes `target/javacg-report.txt` and
 | `sourceRoot` | first compile source root | SARIF path prefix |
 
 All parameters can be skipped with `-Djavacg.skip`.
+
+## MCP server
+
+`javacg-mcp.jar` is a [Model Context Protocol](https://modelcontextprotocol.io) server on
+stdin/stdout, so assistants such as Claude Code can analyze a program and drive recordings.
+It keeps loaded models in memory: a deployment is analyzed once per session and then queried
+many times, instead of once per CLI call.
+
+```
+claude mcp add javacg -- java -jar /path/to/javacg-mcp/target/javacg-mcp.jar
+```
+
+Other clients take the same command in their JSON configuration:
+
+```json
+{ "mcpServers": { "javacg": { "command": "java", "args": ["-jar", "/path/to/javacg-mcp.jar"] } } }
+```
+
+| Tool | |
+|------|-|
+| `load_model` | static analysis of `app` inputs (`lib` for third-party jars) and/or `trace` recordings; returns a `model_id`. Loading the same inputs again refreshes that model |
+| `list_models`, `unload_model` | models held by the server |
+| `find_methods` | exact method names for a pattern, with static/runtime status |
+| `describe_method` | runtime statistics and direct callers/callees with provenance, lines and counts |
+| `call_paths`, `check_guard`, `callers`, `callees` | the `query` commands |
+| `gap_report` | static vs runtime disagreements |
+| `hotspots` | methods by self time, total time, calls or exceptional exits |
+| `run_detectors`, `list_detectors` | the bug detectors, optionally writing SARIF |
+| `export_graph` | the merged graph, or the part reachable from/to a pattern, as JSON or DOT |
+| `list_jvms` | local JVMs and whether the agent is loaded in them |
+| `attach_agent` | loads the agent into a running JVM (Attach API); the agent jar is embedded in the server |
+| `recorder` | `status`, `start`, `stop`, `dump` through the `javacg:type=Recorder` MBean, by `pid` or `jmx_url` |
+
+Method names in results use the Java form (`a.b.C.m(int,java.lang.String)`) and can be passed
+back as patterns; a pattern without a package that matches nothing is retried as `*.<pattern>`.
+A live session looks like: `list_jvms` → `attach_agent` with `incl=...;record=manual` →
+`recorder start` → exercise the application → `recorder stop` → `load_model` with the
+returned directory as `trace` and the application as `app`.
+
+* The agent can be loaded once per JVM; a second `attach_agent` (or `-javaagent` plus attach)
+  is refused, since a second transformer would record every call twice.
+* JDK 21+ prints a warning in the target when an agent is loaded dynamically; start it with
+  `-XX:+EnableDynamicAgentLoading` to silence it. WildFly also needs `gr.gousiosg.javacg.rt` in
+  `jboss.modules.system.pkgs` from server start (see below), so for WildFly prefer
+  `-javaagent` with `record=manual` and use `recorder` only.
+* `recorder` by `pid` starts the target's local JMX agent if needed. `jmx_url` takes an RMI
+  service URL or `host:port`; WildFly's `remote+http` protocol needs `jboss-client.jar`, which
+  the server does not bundle.
+* Recording directories are on the target's file system; `load_model` must see the same paths.
+* Logging goes to stderr (`-Dorg.slf4j.simpleLogger.defaultLogLevel=debug` for more).
 
 ## WildFly / JBoss EAP
 

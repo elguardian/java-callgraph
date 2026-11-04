@@ -22,6 +22,9 @@ public final class AgentMain {
     private static final String RUNTIME_JAR = "/META-INF/javacg/javacg-rt.jar";
     private static final String RUNTIME_CLASS = "gr.gousiosg.javacg.rt.Recorder";
 
+    /** System property holding the options of the loaded agent; also read by the MCP server through Attach. */
+    public static final String LOADED_PROPERTY = "javacg.agent.options";
+
     private AgentMain() {
     }
 
@@ -34,6 +37,13 @@ public final class AgentMain {
     }
 
     private static void boot(String args, Instrumentation inst, boolean attached) {
+        String loaded = System.getProperty(LOADED_PROPERTY);
+        if (loaded != null) {
+            // a second transformer would record every call twice
+            System.err.println("[javacg] agent already loaded (options: " + loaded + "), ignoring: " + args);
+            return;
+        }
+        System.setProperty(LOADED_PROPERTY, args == null ? "" : args);
         try {
             AgentConfig config = AgentConfig.parse(args);
             if (!runtimeOnBootstrap()) {

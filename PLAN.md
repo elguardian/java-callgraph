@@ -5,7 +5,8 @@ runtime traces with static analysis of the bytecode to find bugs.
 
 ## Status
 
-All phases are implemented on the `v2` branch, one commit per phase. Not yet done:
+All phases are implemented on the `v2` branch, one commit per phase, plus an MCP server
+(`javacg-mcp`) over the analysis and live recording control. Not yet done:
 
 * No automated test against a live WildFly/Arquillian setup; the integration tests use
   plain forked JVMs.
