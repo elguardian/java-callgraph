@@ -31,7 +31,7 @@ import gr.gousiosg.javacg.devtools.timeline.Timeline;
 final class TimelineTools {
 
     private enum Source {
-        RECORDING, LOG, MAVEN, GC, EVENTS
+        RECORDING, LOG, MAVEN, GC, JFR, EVENTS
     }
 
     List<ToolDef> tools() {
@@ -66,7 +66,7 @@ final class TimelineTools {
                 waits, longest blocks) and the diagram: ascii swimlanes, mermaid gantt, plantuml concise, \
                 chrome (Trace Event JSON for Perfetto or chrome://tracing) or html (self-contained SVG \
                 page). chrome and html need 'output'.""", false,
-                Schema.object().choice("source", "Where the blocks come from", null, "recording", "log", "maven", "gc", "events")
+                Schema.object().choice("source", "Where the blocks come from", null, "recording", "log", "maven", "gc", "jfr", "events")
                         .strings("trace", "recording: recording directories or an agent out= directory", false)
                         .string("methods", "recording: methods drawn. " + AnalysisTools.PATTERN_HELP + " Default: all", false)
                         .bool("locks", "recording: draw lock waits and holds", true)
@@ -79,6 +79,7 @@ final class TimelineTools {
                         .raw("markers", "log: records drawn as instants", false, Map.of("type", "array", "items", marker))
                         .string("log_file", "maven: a log written by maven_run (it has timestamps and threads)", false)
                         .strings("gc_files", "gc: GC log files; pauses become blocks on a GC lane", false)
+                        .string("jfr_file", "jfr: a recording; monitor waits, parks, I/O and GC pauses become blocks", false)
                         .raw("events", "events: the blocks", false, Map.of("type", "array", "items", event))
                         .raw("from_ms", "Window start, milliseconds after the timeline start", false, Map.of("type", "number"))
                         .raw("to_ms", "Window end, milliseconds after the timeline start", false, Map.of("type", "number"))
@@ -186,6 +187,13 @@ final class TimelineTools {
                     yield MavenSource.read(MavenLogParser.parse(log));
                 }
                 case GC -> gc(args);
+                case JFR -> {
+                    Path f = args.has("jfr_file") ? ToolArgs.path(args.require("jfr_file")) : null;
+                    if (f == null || !Files.isRegularFile(f)) {
+                        throw new ToolException("source=jfr needs 'jfr_file', a .jfr recording");
+                    }
+                    yield gr.gousiosg.javacg.devtools.timeline.JfrSource.read(f, maxSpans);
+                }
                 case EVENTS -> events(args, zone);
             };
         } catch (IllegalArgumentException e) {

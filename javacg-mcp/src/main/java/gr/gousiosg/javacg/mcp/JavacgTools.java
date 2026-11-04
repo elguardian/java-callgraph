@@ -34,6 +34,7 @@ final class JavacgTools {
         all.addAll(jobs.tools());
         all.addAll(new ThreadTools().tools());
         all.addAll(new GcTools().tools());
+        all.addAll(new JfrTools(jobs).tools());
         all.forEach(t -> tools.put(t.name(), t));
     }
 
