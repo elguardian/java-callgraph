@@ -55,4 +55,22 @@ class GitToolsTest {
         assertTrue(error(tools, "stacktrace_map", "text", TRACE, "repo", tmp.toString()).startsWith("Not a git repository"));
         assertTrue(error(tools, "stacktrace_map", "text", "no trace", "repo", repo.dir.toString()).startsWith("No stack trace"));
     }
+
+    @Test
+    void bisectWithACommand(@TempDir Path tmp) throws Exception {
+        TestRepo repo = new TestRepo(tmp.resolve("b"));
+        String first = repo.write("f.txt", "ok\n").commit("1");
+        repo.write("f.txt", "ok 2\n").commit("2");
+        String broken = repo.write("f.txt", "BROKEN\n").commit("3");
+        repo.write("f.txt", "BROKEN 4\n").commit("4");
+        JavacgTools tools = new JavacgTools();
+        String job = (String) ok(tools, "bisect_run", "project_dir", repo.dir.toString(), "good", first, "oracle", "command",
+                "command", List.of("sh", "-c", "! grep -q BROKEN f.txt")).get("job_id");
+        Map<String, Object> status = ok(tools, "job_status", "job_id", job, "wait_seconds", 60);
+        assertEquals(broken, map(map(status.get("result")).get("first_bad")).get("commit"), status.toString());
+        assertTrue(((List<?>) status.get("progress")).get(0).toString().startsWith("bisecting "));
+        assertTrue(error(tools, "bisect_run", "project_dir", repo.dir.toString(), "good", "nope", "oracle", "command",
+                "command", List.of("true")).contains("failed"));
+        assertTrue(error(tools, "bisect_run", "project_dir", repo.dir.toString(), "good", first).contains("needs 'args'"));
+    }
 }

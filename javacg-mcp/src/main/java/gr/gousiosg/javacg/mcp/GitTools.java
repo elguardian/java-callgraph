@@ -6,8 +6,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import gr.gousiosg.javacg.devtools.git.Bisect;
 import gr.gousiosg.javacg.devtools.git.Git;
 import gr.gousiosg.javacg.devtools.git.SourceMapper;
+import gr.gousiosg.javacg.devtools.maven.MavenBuild;
+import gr.gousiosg.javacg.devtools.maven.MavenRunner;
 import gr.gousiosg.javacg.devtools.stack.StackTrace;
 import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
 
@@ -21,7 +24,157 @@ final class GitTools {
     }
 
     List<ToolDef> tools() {
-        return List.of(stacktraceMap());
+        return List.of(stacktraceMap(), bisect());
+    }
+
+    private ToolDef bisect() {
+        return new ToolDef("bisect_run", "Find the commit that broke something", """
+                Runs git bisect between a good and a bad commit and returns the first bad commit (subject, \
+                author, files) and every step. Each commit is judged in a temporary worktree, so the user's \
+                checkout is untouched. Oracles: maven (runs mvn with 'args'; bad when 'fails_test' fails, when the \
+                log matches 'log_matches', or else when the build fails; commits that do not compile, or whose \
+                build fails before the tests run, are skipped unless compile_errors_are_bad) or command (any \
+                argv: exit 0 good, 125 skip, other bad, as git bisect run). Runs in the background: the reply is \
+                a job_id for job_status. Use verify or test goals, not install, so the bisect builds do not \
+                replace artifacts in the local Maven repository.""", false,
+                Schema.object().string("good", "A commit, tag or branch known to be good", true)
+                        .string("bad", "A commit known to be bad (default HEAD)", false)
+                        .string("project_dir", "Maven project directory in the repository (default: the server's "
+                                + "directory)", false)
+                        .choice("oracle", "How each commit is judged", "maven", "maven", "command")
+                        .strings("args", "maven: Maven arguments, e.g. [\"-pl\", \"core\", \"-am\", \"test\", "
+                                + "\"-Dtest=OrderTest\", \"-Dsurefire.failIfNoSpecifiedTests=false\"]", false)
+                        .string("fails_test", "maven: the commit is bad when this test fails (Class#method, Class.method or "
+                                + "a part of it)", false)
+                        .string("log_matches", "maven: the commit is bad when the build log matches this regex", false)
+                        .bool("compile_errors_are_bad", "maven: count commits that do not compile as bad", false)
+                        .bool("offline", "maven: add -o", false)
+                        .strings("command", "command: the argv run in the worktree root", false)
+                        .integer("max_steps", "Most commits judged", 30)
+                        .integer("step_timeout_seconds", "Most time per commit (a timeout skips it)", 1800)
+                        .tableFormat().build(),
+                args -> {
+                    Git git = git(args);
+                    Path projectDir = ToolArgs.path(args.string("project_dir", "."));
+                    if (!projectDir.startsWith(git.dir())) {
+                        throw new ToolException("project_dir " + projectDir + " is not inside the repository " + git.dir());
+                    }
+                    Path relative = git.dir().relativize(projectDir);
+                    java.time.Duration timeout = java.time.Duration.ofSeconds(args.integer("step_timeout_seconds", 1800));
+                    Bisect.Oracle oracle = switch (args.string("oracle", "maven")) {
+                        case "command" -> {
+                            List<String> argv = args.strings("command");
+                            if (argv.isEmpty()) {
+                                throw new ToolException("oracle=command needs 'command'");
+                            }
+                            yield Bisect.command(argv, timeout);
+                        }
+                        default -> {
+                            List<String> mvn = args.strings("args");
+                            if (mvn.isEmpty()) {
+                                throw new ToolException("oracle=maven needs 'args', e.g. [\"test\"]");
+                            }
+                            yield maven(relative, mvn, timeout, args);
+                        }
+                    };
+                    String good = args.require("good");
+                    String bad = args.string("bad", "HEAD");
+                    int maxSteps = args.integer("max_steps", 30);
+                    try {
+                        git.commit(good);
+                        git.commit(bad);
+                    } catch (java.io.IOException e) {
+                        throw new ToolException(e.getMessage());
+                    }
+                    Jobs.Job job = jobs.start("bisect_run", j -> {
+                        Bisect.Outcome o;
+                        try {
+                            o = Bisect.run(git, good, bad, oracle, maxSteps, j::progress, j::cancelled);
+                        } catch (IllegalArgumentException e) {
+                            throw new ToolException(e.getMessage());
+                        }
+                        return outcome(o, args);
+                    });
+                    return Jobs.started(job, "The bisect");
+                });
+    }
+
+    /** Runs Maven in the worktree and turns the build into a verdict. */
+    private static Bisect.Oracle maven(Path relative, List<String> mvn, java.time.Duration timeout, ToolArgs args) {
+        String failsTest = args.string("fails_test", null);
+        java.util.regex.Pattern logMatches = args.has("log_matches") ? java.util.regex.Pattern.compile(args.require("log_matches"))
+                : null;
+        boolean compileBad = args.bool("compile_errors_are_bad", false);
+        boolean offline = args.bool("offline", false);
+        return (tree, commit) -> {
+            Path log = java.nio.file.Files.createTempFile("javacg-bisect-" + commit.substring(0, 10) + "-", ".log");
+            MavenRunner.Run run = MavenRunner.run(new MavenRunner.Options(tree.resolve(relative.toString()), mvn, timeout, offline,
+                    null, Map.of(), log, false));
+            MavenBuild b = run.build();
+            if (run.timedOut()) {
+                return new Bisect.Evaluation(Bisect.Verdict.SKIP, "timed out");
+            }
+            if (!b.compilerErrors().isEmpty()) {
+                MavenBuild.CompilerMessage c = b.compilerErrors().get(0);
+                String where = c.file().substring(c.file().lastIndexOf('/') + 1) + ":" + c.line();
+                return new Bisect.Evaluation(compileBad ? Bisect.Verdict.BAD : Bisect.Verdict.SKIP, "does not compile: " + where
+                        + " " + c.message().lines().findFirst().orElse(""));
+            }
+            if (failsTest != null) {
+                String want = failsTest.replace('#', '.');
+                for (MavenBuild.TestFailure f : b.testFailures()) {
+                    if (f.test().contains(want)) {
+                        return new Bisect.Evaluation(Bisect.Verdict.BAD, f.test() + " " + f.kind());
+                    }
+                }
+                if (b.testCounts().isEmpty() && run.exitCode() != 0) {
+                    return new Bisect.Evaluation(Bisect.Verdict.SKIP, "the build failed before the tests ran"
+                            + (b.goalFailures().isEmpty() ? "" : ": " + b.goalFailures().get(0).message()));
+                }
+                return new Bisect.Evaluation(Bisect.Verdict.GOOD, failsTest + " did not fail");
+            }
+            if (logMatches != null) {
+                boolean found = logMatches.matcher(java.nio.file.Files.readString(run.log())).find();
+                return new Bisect.Evaluation(found ? Bisect.Verdict.BAD : Bisect.Verdict.GOOD, found ? "log matches" : "no match");
+            }
+            if (run.exitCode() == 0) {
+                return new Bisect.Evaluation(Bisect.Verdict.GOOD, "build passed");
+            }
+            String why = !b.testFailures().isEmpty() ? b.testFailures().get(0).test() + " " + b.testFailures().get(0).kind()
+                    : !b.goalFailures().isEmpty() ? b.goalFailures().get(0).message() : "exit " + run.exitCode();
+            return new Bisect.Evaluation(Bisect.Verdict.BAD, why);
+        };
+    }
+
+    private static Map<String, Object> outcome(Bisect.Outcome o, ToolArgs args) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (o.firstBad() != null) {
+            Map<String, Object> c = new LinkedHashMap<>();
+            c.put("commit", o.firstBad());
+            c.put("subject", o.subject());
+            c.put("author", o.author());
+            c.put("date", o.date());
+            c.put("files", o.files());
+            m.put("first_bad", c);
+        }
+        if (!o.candidates().isEmpty()) {
+            m.put("candidates", o.candidates());
+        }
+        if (o.message() != null) {
+            m.put("message", o.message());
+        }
+        List<Map<String, Object>> steps = o.steps().stream().map(s -> {
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("commit", s.commit().substring(0, 10));
+            r.put("subject", s.subject());
+            r.put("verdict", Views.lower(s.verdict()));
+            r.put("seconds", s.seconds());
+            r.put("reason", s.reason());
+            return r;
+        }).toList();
+        m.put("steps", steps);
+        Views.table(m, steps, null, args);
+        return m;
     }
 
     private ToolDef stacktraceMap() {
