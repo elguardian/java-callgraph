@@ -5,12 +5,15 @@ runtime traces with static analysis of the bytecode to find bugs.
 
 ## Status
 
-All phases are implemented on the `v2` branch, one commit per phase, plus an MCP server
-(`mcp-set-tools-mcp`) over the analysis and live recording control, and developer tools
-(`mcp-set-tools-devtools`: JUnit reports, Maven reactor/runs/logs, log queries, tables, thread
-timelines), and sustaining tools (thread dumps, GC logs, heap histograms, JFR, method watches,
-stack trace to version mapping, known issues with Jira search, bisect), and a daily status of pending
-work across Jira, GitHub and GitLab. Not yet done:
+All phases are implemented on the `v2` branch, one commit per phase, plus an MCP tool set:
+call-graph analysis and live recording control, developer tools (JUnit reports, Maven
+reactor/runs/logs, log queries, tables, thread timelines), sustaining tools (thread dumps, GC
+logs, heap histograms, JFR, method watches, stack trace to version mapping, known issues with
+Jira search, bisect), and a daily status of pending work across Jira, GitHub and GitLab.
+
+The code is split into building blocks, a tool SPI (`mcp-set-tools-tool-api`), one tool module
+per domain, and a thin MCP host that finds the modules through ServiceLoader and a plugins
+directory (see the Architecture section of the README). Not yet done:
 
 * No automated test against a live WildFly/Arquillian setup; the integration tests use
   plain forked JVMs.
@@ -38,7 +41,7 @@ work across Jira, GitHub and GitLab. Not yet done:
 | Detectors | Generic first — no domain-specific (e.g. RBAC) checks yet |
 | Bytecode library | ASM for both the static analyzer and the agent (replaces BCEL and Javassist) |
 | Primary target | WildFly + Arquillian; standalone apps must still work |
-| Home | This fork (`elguardian/java-callgraph`) |
+| Home | `elguardian/mcp-set-tools` (forked from `gousiosg/java-callgraph`) |
 | Java baseline | Build with `--release 17` (the oldest JDK current WildFly runs on); test on 17, 21, 25 |
 
 ## Current state (baseline)
@@ -81,6 +84,9 @@ the ASM implementation; each defect becomes a regression test for v2):
 
 Maven modules: `mcp-set-tools-rt` (probe runtime), `mcp-set-tools-core`, `mcp-set-tools-static`, `mcp-set-tools-agent`,
 `mcp-set-tools-analyze`, `mcp-set-tools-cli`, plus `mcp-set-tools-testkit` (in-test compilation helpers).
+The MCP tool set adds `mcp-set-tools-commons`, `-timeline` and `-connectors` (building blocks),
+`mcp-set-tools-tool-api` (tool SPI), nine `mcp-set-tools-tool-*` modules and the `mcp-set-tools-mcp`
+host; the README's Architecture section has the layer diagram.
 The legacy BCEL/Javassist code and `process_trace.rb` are removed in Phase 0.
 
 ## WildFly / Arquillian constraints for the agent

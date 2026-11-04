@@ -16,20 +16,50 @@ Version 2 is a rewrite on [ASM](https://asm.ow2.io/). The original BCEL/Javassis
 (`javacg-static` / `javacg-dynamic` of java-callgraph) has been removed; see [PLAN.md](PLAN.md) for the design
 and the phase-by-phase roadmap.
 
-## Modules
+## Architecture
 
-| Module | Purpose |
-|--------|---------|
-| `mcp-set-tools-core` | Shared model: `MethodId`, `CallGraph` with per-edge provenance, JSON/DOT output, trace reader |
-| `mcp-set-tools-rt` | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
-| `mcp-set-tools-agent` | Java agent, packaged as `mcp-set-tools-agent/target/mcp-set-tools-agent.jar` |
-| `mcp-set-tools-static` | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
-| `mcp-set-tools-analyze` | Merged static + runtime model, graph queries, gap report, bug detectors |
-| `mcp-set-tools-cli` | Command line front end, packaged as `mcp-set-tools-cli/target/mcp-set-tools.jar` |
-| `mcp-set-tools-maven-plugin` | `prepare-agent` and `analyze` goals for `mvn verify` |
-| `mcp-set-tools-devtools` | Tables, stack traces, JUnit reports, Maven reactor/runs/logs, log parsing, thread timelines |
-| `mcp-set-tools-mcp` | MCP server for AI assistants, packaged as `mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar` |
-| `mcp-set-tools-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
+Three layers. Building blocks know nothing about tools or MCP; tool modules offer the
+functionality; the MCP server is a thin layer that connects AI clients to whatever tool modules
+it finds.
+
+```
+ Layer 3  hosts        mcp-set-tools-mcp (MCP over stdio)   mcp-set-tools-cli   mcp-set-tools-maven-plugin
+                               │ ServiceLoader + plugins dir          │ (use layer 0 directly)
+ Layer 2  tool modules  format  logs  build  timeline  git  issues  status  jvm  callgraph
+                               │ each: domain code + a ToolProvider
+ Layer 1  tool SPI      mcp-set-tools-tool-api  (Tool, Schema, ToolArgs, ToolProvider, ToolContext,
+                                                 Jobs, ToolRegistry)
+ Layer 0  blocks        commons  timeline  connectors   rt  core  static  analyze  agent
+```
+
+Only `mcp-set-tools-mcp` depends on the MCP SDK. A tool module depends on `tool-api`, building
+blocks and, where it reuses a parser, the library packages of another tool module (build uses
+logs; git uses build; issues uses logs, build and connectors).
+
+| Module | Layer | Purpose |
+|--------|-------|---------|
+| `mcp-set-tools-commons` | 0 | Stack trace parsing, tables (ascii/markdown/jira/slack/csv/tsv/html), templates, JSON read/write, `ProcessRunner`, `HttpJson` |
+| `mcp-set-tools-timeline` | 0 | Spans, marks, layout, overlap/lock analysis, renderers (ascii, mermaid, plantuml, chrome trace, html) and the `TimelineSource` SPI |
+| `mcp-set-tools-connectors` | 0 | Jira (REST), GitHub (GraphQL) and GitLab (REST) clients |
+| `mcp-set-tools-core` | 0 | Shared model: `MethodId`, `CallGraph` with per-edge provenance, JSON/DOT output, trace reader |
+| `mcp-set-tools-rt` | 0 | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
+| `mcp-set-tools-agent` | 0 | Java agent, packaged as `mcp-set-tools-agent/target/mcp-set-tools-agent.jar` |
+| `mcp-set-tools-static` | 0 | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
+| `mcp-set-tools-analyze` | 0 | Merged static + runtime model, graph queries, gap report, bug detectors |
+| `mcp-set-tools-tool-api` | 1 | The tool SPI and `ToolRegistry` (discovery, disabled list, dispatch), background jobs |
+| `mcp-set-tools-tool-format` | 2 | `table_render`, `stacktrace_parse` |
+| `mcp-set-tools-tool-logs` | 2 | `log_query`, `log_pattern`; timeline source `log` |
+| `mcp-set-tools-tool-build` | 2 | `maven_reactor`, `maven_run`, `maven_log`, `junit_summary`, `junit_failures`, `junit_compare`; timeline source `maven` |
+| `mcp-set-tools-tool-timeline` | 2 | `timeline` (built-in `events` source; the others are found by ServiceLoader) |
+| `mcp-set-tools-tool-git` | 2 | `stacktrace_map`, `bisect_run` |
+| `mcp-set-tools-tool-issues` | 2 | `known_issue_match`, `known_issue_add`, `known_issue_import` |
+| `mcp-set-tools-tool-status` | 2 | `daily_status` |
+| `mcp-set-tools-tool-jvm` | 2 | `list_jvms`, `attach_agent`, `recorder`, `watch_method`, `thread_dump_analyze`, `gc_log_analyze`, `heap_histogram`, `jfr_analyze`; timeline sources `gc`, `jfr` |
+| `mcp-set-tools-tool-callgraph` | 2 | `load_model` … `export_graph`; timeline source `recording` |
+| `mcp-set-tools-mcp` | 3 | MCP server, packaged as `mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar` with every tool module |
+| `mcp-set-tools-cli` | 3 | Command line front end, packaged as `mcp-set-tools-cli/target/mcp-set-tools.jar` |
+| `mcp-set-tools-maven-plugin` | 3 | `prepare-agent` and `analyze` goals for `mvn verify` |
+| `mcp-set-tools-testkit` | test | In-memory compilation of fixtures, forked JVM runs, `ToolHarness` for tool tests |
 
 ## Build
 
@@ -352,6 +382,18 @@ returned directory as `trace` and the application as `app`.
 * Recording directories are on the target's file system; `load_model` must see the same paths.
 * Logging goes to stderr (`-Dorg.slf4j.simpleLogger.defaultLogLevel=debug` for more).
 
+### Configuration and plugins
+
+The server keeps its state under `~/.mcp-set-tools` (or `$MCPSETTOOLS_HOME`):
+
+* `tools.json` hides tools by name, or all tools of a module by provider id:
+  `{"disabled": ["maven_run", "provider:status"]}`. Provider ids: `format`, `logs`, `build`,
+  `timeline`, `git`, `issues`, `status`, `jvm`, `callgraph`, `jobs`.
+* `plugins/` (or `-Dmcpsettools.plugins=<dir>` / `$MCPSETTOOLS_PLUGINS`): every `*.jar` there is
+  loaded at startup with the bundled modules, so its tools and timeline sources join the server.
+  A provider that fails to load or to build its tools is reported on stderr and skipped; a tool
+  name that is already taken keeps the first provider's tool.
+
 ### Developer tools
 
 The same server carries tools for everyday work on Java projects. They need no `load_model`;
@@ -507,6 +549,52 @@ The entries are:
 Without a file, `JIRA_URL`/`JIRA_TOKEN`[/`JIRA_USER`], `GITHUB_TOKEN` (or `GH_TOKEN`) and
 `GITLAB_URL`/`GITLAB_TOKEN` are used. A source that fails (expired token, unreachable) is
 reported in the digest; the others still show.
+
+## Writing a tool module
+
+A tool module is a jar with a `ToolProvider` and a services file. It needs only
+`mcp-set-tools-tool-api`, with `provided` scope when the jar is meant for the plugins directory:
+
+```xml
+<dependency>
+  <groupId>io.github.elguardian</groupId>
+  <artifactId>mcp-set-tools-tool-api</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <scope>provided</scope>
+</dependency>
+```
+
+```java
+package com.example.tools;
+
+public final class EchoProvider implements ToolProvider {
+    @Override public String id() { return "echo"; }
+
+    @Override public List<Tool> tools(ToolContext context) {
+        return List.of(new Tool("echo", "Echo", "Returns its text, reversed", true,
+                Schema.object().string("text", "Text to reverse", true).build(),
+                args -> new StringBuilder(args.string("text", "")).reverse().toString()));
+    }
+
+    /** Shown to the AI client in the server instructions. */
+    @Override public String instructions() { return "Echo: echo reverses text."; }
+}
+```
+
+and `src/main/resources/META-INF/services/io.github.elguardian.mcpsettools.tool.ToolProvider`
+containing `com.example.tools.EchoProvider`. Drop the jar into `~/.mcp-set-tools/plugins`.
+
+* A handler returns a `String` (sent as it is: tables, diagrams) or maps and lists (sent as JSON);
+  it throws `ToolException` for an error the client should see.
+* `ToolArgs` reads typed arguments; `Results.page` and `Results.table` give list results paging
+  and `table_format`.
+* `ToolContext` gives `jobs()` for background work (`job_status` polls it), `home()` for state
+  and config, `secret(name)` for tokens (environment, then system property: never take tokens
+  as tool arguments) and `log()` (stderr; stdout carries the protocol).
+* A module can also contribute a timeline source: implement
+  `io.github.elguardian.mcpsettools.timeline.TimelineSource` and list it in its services file.
+* Test with `ToolHarness` from `mcp-set-tools-testkit`, which loads every provider on the test
+  class path: `ToolHarness.ok(tools, "echo", "text", "abc")`.
 
 ## WildFly / JBoss EAP
 
