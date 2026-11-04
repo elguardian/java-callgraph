@@ -75,7 +75,7 @@ public final class ToolRegistry {
             List<Tool> list;
             try {
                 list = p.tools(context);
-            } catch (RuntimeException | LinkageError e) {
+            } catch (RuntimeException | ServiceConfigurationError | LinkageError e) {
                 warnings.add("tool provider " + p.id() + " failed and was skipped: " + e);
                 continue;
             }

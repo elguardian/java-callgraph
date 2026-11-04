@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.regex.Pattern;
 
@@ -31,7 +33,17 @@ final class TimelineTools {
     TimelineTools(ToolContext context) {
         this.context = context;
         List<TimelineSource> found = new ArrayList<>();
-        ServiceLoader.load(TimelineSource.class, context.classLoader()).forEach(found::add);
+        Iterator<TimelineSource> it = ServiceLoader.load(TimelineSource.class, context.classLoader()).iterator();
+        while (true) {
+            try {
+                if (!it.hasNext()) {
+                    break;
+                }
+                found.add(it.next());
+            } catch (ServiceConfigurationError e) {
+                context.log().println("[mcp-set-tools] cannot load a timeline source: " + e.getMessage());
+            }
+        }
         found.sort(Comparator.comparingInt(TimelineSource::order).thenComparing(TimelineSource::name));
         Map<String, TimelineSource> byName = new LinkedHashMap<>();
         for (TimelineSource src : found) {

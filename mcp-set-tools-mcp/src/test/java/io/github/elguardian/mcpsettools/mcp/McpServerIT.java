@@ -28,7 +28,7 @@ class McpServerIT {
     void servesToolsOverStdio(@TempDir Path tmp) throws Exception {
         Path jar = Path.of(System.getProperty("mcpsettools.mcp.jar"));
         assertTrue(Files.isRegularFile(jar), "server jar not built: " + jar);
-        Path app = Fixture.appJar(tmp);
+        Path app = SampleApp.appJar(tmp);
         McpJsonMapper json = McpJsonDefaults.getMapper();
         String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
         StdioClientTransport transport = new StdioClientTransport(

@@ -31,7 +31,6 @@
     <module>mcp-set-tools-analyze</module>
     <module>mcp-set-tools-cli</module>
     <module>mcp-set-tools-maven-plugin</module>
-    <module>mcp-set-tools-devtools</module>
     <module>mcp-set-tools-tool-format</module>
     <module>mcp-set-tools-tool-timeline</module>
     <module>mcp-set-tools-tool-logs</module>
@@ -39,6 +38,8 @@
     <module>mcp-set-tools-tool-git</module>
     <module>mcp-set-tools-tool-issues</module>
     <module>mcp-set-tools-tool-status</module>
+    <module>mcp-set-tools-tool-jvm</module>
+    <module>mcp-set-tools-tool-callgraph</module>
     <module>mcp-set-tools-mcp</module>
   </modules>
 
@@ -143,6 +144,16 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-jvm</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-callgraph</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
         <artifactId>mcp-set-tools-testkit</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -169,11 +180,6 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>mcp-set-tools-agent</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>mcp-set-tools-devtools</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
