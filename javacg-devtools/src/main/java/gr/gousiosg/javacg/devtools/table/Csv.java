@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** RFC 4180 reading and writing; with a tab separator, TSV (no quoting, tabs and newlines become spaces). */
-final class Csv {
+public final class Csv {
 
     private Csv() {
     }
 
-    static List<List<String>> parse(String text, char sep) {
+    public static List<List<String>> parse(String text, char sep) {
         List<List<String>> records = new ArrayList<>();
         List<String> record = new ArrayList<>();
         StringBuilder field = new StringBuilder();

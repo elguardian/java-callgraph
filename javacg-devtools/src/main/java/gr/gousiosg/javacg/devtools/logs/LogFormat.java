@@ -45,6 +45,7 @@ public final class LogFormat {
     }
 
     private static final List<String> FIELDS = List.of("ts", "level", "thread", "logger", "message");
+    private static final Pattern EXCEPTION_HEADER = Pattern.compile("^(?:[a-zA-Z_$][\\w$]*\\.)+[\\w$]*(?:Exception|Error|Throwable)(?::.*)?$");
 
     private final String name;
     private final String spec;
@@ -104,8 +105,9 @@ public final class LogFormat {
         LogFormat best = null;
         int bestScore = 0;
         int bestTimed = 0;
-        List<String> lines = sample.stream().filter(l -> !l.isBlank() && !l.startsWith("\tat ") && !l.startsWith("    at "))
-                .toList();
+        // continuation lines (stack traces, wrapped messages) do not start records in any format
+        List<String> lines = sample.stream().filter(l -> !l.isBlank() && !Character.isWhitespace(l.charAt(0))
+                && !l.startsWith("Caused by:") && !l.startsWith("Suppressed:") && !EXCEPTION_HEADER.matcher(l).matches()).toList();
         for (String preset : PRESETS.keySet()) {
             LogFormat f = of(preset, null, null);
             int score = 0;
