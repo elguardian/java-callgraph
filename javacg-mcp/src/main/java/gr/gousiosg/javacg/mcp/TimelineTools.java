@@ -31,7 +31,7 @@ import gr.gousiosg.javacg.devtools.timeline.Timeline;
 final class TimelineTools {
 
     private enum Source {
-        RECORDING, LOG, MAVEN, EVENTS
+        RECORDING, LOG, MAVEN, GC, EVENTS
     }
 
     List<ToolDef> tools() {
@@ -66,7 +66,7 @@ final class TimelineTools {
                 waits, longest blocks) and the diagram: ascii swimlanes, mermaid gantt, plantuml concise, \
                 chrome (Trace Event JSON for Perfetto or chrome://tracing) or html (self-contained SVG \
                 page). chrome and html need 'output'.""", false,
-                Schema.object().choice("source", "Where the blocks come from", null, "recording", "log", "maven", "events")
+                Schema.object().choice("source", "Where the blocks come from", null, "recording", "log", "maven", "gc", "events")
                         .strings("trace", "recording: recording directories or an agent out= directory", false)
                         .string("methods", "recording: methods drawn. " + AnalysisTools.PATTERN_HELP + " Default: all", false)
                         .bool("locks", "recording: draw lock waits and holds", true)
@@ -78,6 +78,7 @@ final class TimelineTools {
                         .raw("spans", "log: span rules", false, Map.of("type", "array", "items", rule))
                         .raw("markers", "log: records drawn as instants", false, Map.of("type", "array", "items", marker))
                         .string("log_file", "maven: a log written by maven_run (it has timestamps and threads)", false)
+                        .strings("gc_files", "gc: GC log files; pauses become blocks on a GC lane", false)
                         .raw("events", "events: the blocks", false, Map.of("type", "array", "items", event))
                         .raw("from_ms", "Window start, milliseconds after the timeline start", false, Map.of("type", "number"))
                         .raw("to_ms", "Window end, milliseconds after the timeline start", false, Map.of("type", "number"))
@@ -184,6 +185,7 @@ final class TimelineTools {
                     }
                     yield MavenSource.read(MavenLogParser.parse(log));
                 }
+                case GC -> gc(args);
                 case EVENTS -> events(args, zone);
             };
         } catch (IllegalArgumentException e) {
@@ -201,6 +203,34 @@ final class TimelineTools {
         }
         if (spans.isEmpty()) {
             throw new ToolException("source=events needs 'events'");
+        }
+        return new Timeline(spans, List.of(), List.of());
+    }
+
+    /** GC pauses (and concurrent cycles on their own lane) at wall-clock time when logged, else at uptime. */
+    private static Timeline gc(ToolArgs args) throws IOException {
+        List<Path> files = args.paths("gc_files");
+        if (files.isEmpty()) {
+            throw new ToolException("source=gc needs 'gc_files'");
+        }
+        Map<String, Object> pass = new LinkedHashMap<>();
+        pass.put("files", files.stream().map(Path::toString).toList());
+        gr.gousiosg.javacg.devtools.gc.GcLog log = GcTools.read(new ToolArgs(pass));
+        List<Span> spans = new ArrayList<>();
+        for (var e : log.events()) {
+            long start = e.wall() != Long.MIN_VALUE ? e.wall() : e.uptime() >= 0 ? Math.round(e.uptime() * 1_000_000) : -1;
+            if (start < 0) {
+                continue;
+            }
+            Map<String, String> a = new LinkedHashMap<>();
+            if (!e.detail().isEmpty()) {
+                a.put("cause", e.detail());
+            }
+            if (e.before() >= 0) {
+                a.put("heap_kb", e.before() + " -> " + e.after());
+            }
+            spans.add(new Span("gc", e.pause() ? "GC pauses" : "GC concurrent", start, start + Math.round(e.millis() * 1000),
+                    e.kind(), e.pause() ? "gc-pause" : "gc-concurrent", 0, a));
         }
         return new Timeline(spans, List.of(), List.of());
     }

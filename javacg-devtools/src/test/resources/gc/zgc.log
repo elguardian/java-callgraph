@@ -1,0 +1,211 @@
+[2026-11-04T19:49:23.717+0100][0.063s][info][gc] Using The Z Garbage Collector
+[2026-11-04T19:49:23.752+0100][0,098s][info][gc] GC(0) Major Collection (Warmup)
+[2026-11-04T19:49:23.755+0100][0,101s][info][gc] GC(0) Major Collection (Warmup) 26M(10%)->24M(9%) 0,002s
+[2026-11-04T19:49:23.759+0100][0,105s][info][gc] GC(1) Major Collection (Warmup)
+[2026-11-04T19:49:23.761+0100][0,107s][info][gc] GC(1) Major Collection (Warmup) 52M(20%)->26M(10%) 0,002s
+[2026-11-04T19:49:23.767+0100][0,113s][info][gc] GC(2) Major Collection (Warmup)
+[2026-11-04T19:49:23.768+0100][0,114s][info][gc] GC(2) Major Collection (Warmup) 78M(30%)->36M(14%) 0,002s
+[2026-11-04T19:49:23.775+0100][0,121s][info][gc] GC(3) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.777+0100][0,123s][info][gc] GC(3) Minor Collection (Allocation Rate) 102M(40%)->42M(16%) 0,002s
+[2026-11-04T19:49:23.777+0100][0,124s][info][gc] GC(4) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.780+0100][0,126s][info][gc] GC(4) Minor Collection (Allocation Rate) 70M(27%)->84M(33%) 0,003s
+[2026-11-04T19:49:23.795+0100][0,141s][info][gc] GC(5) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.796+0100][0,142s][info][gc] GC(5) Minor Collection (Allocation Rate) 160M(62%)->18M(7%) 0,001s
+[2026-11-04T19:49:23.800+0100][0,146s][info][gc] GC(6) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.801+0100][0,147s][info][gc] GC(6) Minor Collection (Allocation Rate) 122M(48%)->42M(16%) 0,001s
+[2026-11-04T19:49:23.803+0100][0,149s][info][gc] GC(7) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.804+0100][0,150s][info][gc] GC(7) Minor Collection (Allocation Rate) 112M(44%)->42M(16%) 0,001s
+[2026-11-04T19:49:23.804+0100][0,150s][info][gc] GC(8) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.805+0100][0,151s][info][gc] GC(8) Minor Collection (Allocation Rate) 56M(22%)->42M(16%) 0,001s
+[2026-11-04T19:49:23.805+0100][0,151s][info][gc] GC(9) Major Collection (Allocation Rate)
+[2026-11-04T19:49:23.807+0100][0,153s][info][gc] GC(9) Major Collection (Allocation Rate) 64M(25%)->88M(34%) 0,002s
+[2026-11-04T19:49:23.811+0100][0,157s][info][gc] GC(10) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.812+0100][0,158s][info][gc] GC(10) Minor Collection (Allocation Rate) 168M(66%)->42M(16%) 0,001s
+[2026-11-04T19:49:23.814+0100][0,160s][info][gc] GC(11) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.814+0100][0,160s][info][gc] GC(11) Minor Collection (Allocation Rate) 104M(41%)->48M(19%) 0,001s
+[2026-11-04T19:49:23.817+0100][0,163s][info][gc] GC(12) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.818+0100][0,164s][info][gc] GC(12) Minor Collection (Allocation Rate) 154M(60%)->44M(17%) 0,001s
+[2026-11-04T19:49:23.821+0100][0,167s][info][gc] GC(13) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.822+0100][0,168s][info][gc] GC(13) Minor Collection (Allocation Rate) 142M(55%)->64M(25%) 0,001s
+[2026-11-04T19:49:23.825+0100][0,171s][info][gc] GC(14) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.826+0100][0,172s][info][gc] GC(14) Minor Collection (Allocation Rate) 146M(57%)->60M(23%) 0,001s
+[2026-11-04T19:49:23.828+0100][0,174s][info][gc] GC(15) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.829+0100][0,175s][info][gc] GC(15) Minor Collection (Allocation Rate) 146M(57%)->60M(23%) 0,001s
+[2026-11-04T19:49:23.832+0100][0,178s][info][gc] GC(16) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.833+0100][0,179s][info][gc] GC(16) Minor Collection (Allocation Rate) 158M(62%)->50M(20%) 0,001s
+[2026-11-04T19:49:23.836+0100][0,182s][info][gc] GC(17) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.837+0100][0,183s][info][gc] GC(17) Minor Collection (Allocation Rate) 162M(63%)->58M(23%) 0,001s
+[2026-11-04T19:49:23.839+0100][0,185s][info][gc] GC(18) Major Collection (Allocation Rate)
+[2026-11-04T19:49:23.843+0100][0,189s][info][gc] GC(19) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.844+0100][0,191s][info][gc] GC(19) Minor Collection (Allocation Rate) 148M(58%)->66M(26%) 0,002s
+[2026-11-04T19:49:23.844+0100][0,191s][info][gc] GC(18) Major Collection (Allocation Rate) 140M(55%)->66M(26%) 0,005s
+[2026-11-04T19:49:23.845+0100][0,191s][info][gc] GC(20) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.846+0100][0,192s][info][gc] GC(20) Minor Collection (Allocation Rate) 88M(34%)->56M(22%) 0,001s
+[2026-11-04T19:49:23.847+0100][0,193s][info][gc] GC(21) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.848+0100][0,194s][info][gc] GC(21) Minor Collection (Allocation Rate) 90M(35%)->50M(20%) 0,001s
+[2026-11-04T19:49:23.850+0100][0,196s][info][gc] GC(22) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.851+0100][0,197s][info][gc] GC(22) Minor Collection (Allocation Rate) 124M(48%)->56M(22%) 0,001s
+[2026-11-04T19:49:23.854+0100][0,200s][info][gc] GC(23) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.855+0100][0,201s][info][gc] GC(23) Minor Collection (Allocation Rate) 142M(55%)->62M(24%) 0,001s
+[2026-11-04T19:49:23.857+0100][0,204s][info][gc] GC(24) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.859+0100][0,205s][info][gc] GC(24) Minor Collection (Allocation Rate) 134M(52%)->60M(23%) 0,001s
+[2026-11-04T19:49:23.863+0100][0,209s][info][gc] GC(25) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.864+0100][0,210s][info][gc] GC(25) Minor Collection (Allocation Rate) 168M(66%)->52M(20%) 0,002s
+[2026-11-04T19:49:23.867+0100][0,213s][info][gc] GC(26) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.868+0100][0,214s][info][gc] GC(26) Minor Collection (Allocation Rate) 104M(41%)->56M(22%) 0,001s
+[2026-11-04T19:49:23.870+0100][0,216s][info][gc] GC(27) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.871+0100][0,218s][info][gc] GC(27) Minor Collection (Allocation Rate) 122M(48%)->60M(23%) 0,001s
+[2026-11-04T19:49:23.875+0100][0,222s][info][gc] GC(28) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.876+0100][0,223s][info][gc] GC(28) Minor Collection (Allocation Rate) 162M(63%)->62M(24%) 0,001s
+[2026-11-04T19:49:23.881+0100][0,227s][info][gc] GC(29) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.882+0100][0,228s][info][gc] GC(29) Minor Collection (Allocation Rate) 166M(65%)->70M(27%) 0,001s
+[2026-11-04T19:49:23.885+0100][0,231s][info][gc] GC(30) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.886+0100][0,233s][info][gc] GC(30) Minor Collection (Allocation Rate) 162M(63%)->72M(28%) 0,001s
+[2026-11-04T19:49:23.890+0100][0,236s][info][gc] GC(31) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.891+0100][0,237s][info][gc] GC(31) Minor Collection (Allocation Rate) 158M(62%)->68M(27%) 0,001s
+[2026-11-04T19:49:23.894+0100][0,240s][info][gc] GC(32) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.895+0100][0,242s][info][gc] GC(32) Minor Collection (Allocation Rate) 164M(64%)->78M(30%) 0,001s
+[2026-11-04T19:49:23.899+0100][0,245s][info][gc] GC(33) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.900+0100][0,246s][info][gc] GC(33) Minor Collection (Allocation Rate) 166M(65%)->78M(30%) 0,001s
+[2026-11-04T19:49:23.903+0100][0,249s][info][gc] GC(34) Major Collection (Allocation Rate)
+[2026-11-04T19:49:23.908+0100][0,254s][info][gc] GC(35) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.909+0100][0,256s][info][gc] GC(35) Minor Collection (Allocation Rate) 152M(59%)->68M(27%) 0,001s
+[2026-11-04T19:49:23.910+0100][0,256s][info][gc] GC(34) Major Collection (Allocation Rate) 168M(66%)->68M(27%) 0,007s
+[2026-11-04T19:49:23.911+0100][0,257s][info][gc] GC(36) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.912+0100][0,258s][info][gc] GC(36) Minor Collection (Allocation Rate) 112M(44%)->62M(24%) 0,001s
+[2026-11-04T19:49:23.914+0100][0,260s][info][gc] GC(37) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.915+0100][0,261s][info][gc] GC(37) Minor Collection (Allocation Rate) 132M(52%)->66M(26%) 0,001s
+[2026-11-04T19:49:23.918+0100][0,264s][info][gc] GC(38) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.919+0100][0,265s][info][gc] GC(38) Minor Collection (Allocation Rate) 140M(55%)->62M(24%) 0,001s
+[2026-11-04T19:49:23.920+0100][0,267s][info][gc] GC(39) Major Collection (System.gc())
+[2026-11-04T19:49:23.923+0100][0,269s][info][gc] GC(39) Major Collection (System.gc()) 78M(30%)->68M(27%) 0,002s
+[2026-11-04T19:49:23.925+0100][0,272s][info][gc] GC(40) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.926+0100][0,272s][info][gc] GC(40) Minor Collection (Allocation Rate) 152M(59%)->80M(31%) 0,001s
+[2026-11-04T19:49:23.931+0100][0,277s][info][gc] GC(41) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.932+0100][0,278s][info][gc] GC(41) Minor Collection (Allocation Rate) 188M(73%)->76M(30%) 0,001s
+[2026-11-04T19:49:23.934+0100][0,280s][info][gc] GC(42) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.934+0100][0,281s][info][gc] GC(42) Minor Collection (Allocation Rate) 134M(52%)->86M(34%) 0,001s
+[2026-11-04T19:49:23.936+0100][0,282s][info][gc] GC(43) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.937+0100][0,283s][info][gc] GC(43) Minor Collection (Allocation Rate) 146M(57%)->96M(38%) 0,001s
+[2026-11-04T19:49:23.939+0100][0,285s][info][gc] GC(44) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.940+0100][0,286s][info][gc] GC(44) Minor Collection (Allocation Rate) 158M(62%)->96M(38%) 0,001s
+[2026-11-04T19:49:23.941+0100][0,287s][info][gc] GC(45) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.941+0100][0,287s][info][gc] GC(45) Minor Collection (Allocation Rate) 140M(55%)->100M(39%) 0,001s
+[2026-11-04T19:49:23.942+0100][0,288s][info][gc] GC(46) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.943+0100][0,289s][info][gc] GC(46) Minor Collection (Allocation Rate) 146M(57%)->98M(38%) 0,001s
+[2026-11-04T19:49:23.945+0100][0,291s][info][gc] GC(47) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.946+0100][0,292s][info][gc] GC(47) Minor Collection (Allocation Rate) 170M(66%)->104M(41%) 0,001s
+[2026-11-04T19:49:23.947+0100][0,293s][info][gc] GC(48) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.948+0100][0,294s][info][gc] GC(48) Minor Collection (Allocation Rate) 162M(63%)->104M(41%) 0,001s
+[2026-11-04T19:49:23.950+0100][0,296s][info][gc] GC(49) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.951+0100][0,297s][info][gc] GC(49) Minor Collection (Allocation Rate) 166M(65%)->112M(44%) 0,001s
+[2026-11-04T19:49:23.952+0100][0,298s][info][gc] GC(50) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.953+0100][0,299s][info][gc] GC(50) Minor Collection (Allocation Rate) 154M(60%)->112M(44%) 0,001s
+[2026-11-04T19:49:23.954+0100][0,300s][info][gc] GC(51) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.955+0100][0,301s][info][gc] GC(51) Minor Collection (Allocation Rate) 166M(65%)->114M(45%) 0,001s
+[2026-11-04T19:49:23.957+0100][0,303s][info][gc] GC(52) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.957+0100][0,303s][info][gc] GC(52) Minor Collection (Allocation Rate) 172M(67%)->114M(45%) 0,001s
+[2026-11-04T19:49:23.959+0100][0,305s][info][gc] GC(53) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.960+0100][0,306s][info][gc] GC(53) Minor Collection (Allocation Rate) 178M(70%)->112M(44%) 0,001s
+[2026-11-04T19:49:23.961+0100][0,307s][info][gc] GC(54) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.962+0100][0,309s][info][gc] GC(54) Minor Collection (Allocation Rate) 156M(61%)->118M(46%) 0,001s
+[2026-11-04T19:49:23.963+0100][0,309s][info][gc] GC(55) Major Collection (Allocation Rate)
+[2026-11-04T19:49:23.965+0100][0,311s][info][gc] GC(56) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.966+0100][0,312s][info][gc] GC(56) Minor Collection (Allocation Rate) 146M(57%)->114M(45%) 0,001s
+[2026-11-04T19:49:23.967+0100][0,313s][info][gc] GC(55) Major Collection (Allocation Rate) 142M(55%)->144M(56%) 0,004s
+[2026-11-04T19:49:23.968+0100][0,314s][info][gc] GC(57) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.969+0100][0,315s][info][gc] GC(57) Minor Collection (Allocation Rate) 156M(61%)->108M(42%) 0,001s
+[2026-11-04T19:49:23.970+0100][0,316s][info][gc] GC(58) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.971+0100][0,317s][info][gc] GC(58) Minor Collection (Allocation Rate) 170M(66%)->110M(43%) 0,001s
+[2026-11-04T19:49:23.973+0100][0,319s][info][gc] GC(59) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.974+0100][0,320s][info][gc] GC(59) Minor Collection (Allocation Rate) 174M(68%)->116M(45%) 0,001s
+[2026-11-04T19:49:23.975+0100][0,321s][info][gc] GC(60) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.975+0100][0,321s][info][gc] GC(60) Minor Collection (Allocation Rate) 152M(59%)->114M(45%) 0,001s
+[2026-11-04T19:49:23.976+0100][0,322s][info][gc] GC(61) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.977+0100][0,323s][info][gc] GC(61) Minor Collection (Allocation Rate) 152M(59%)->116M(45%) 0,001s
+[2026-11-04T19:49:23.978+0100][0,324s][info][gc] GC(62) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.979+0100][0,325s][info][gc] GC(62) Minor Collection (Allocation Rate) 168M(66%)->120M(47%) 0,001s
+[2026-11-04T19:49:23.980+0100][0,326s][info][gc] GC(63) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.981+0100][0,327s][info][gc] GC(63) Minor Collection (Allocation Rate) 168M(66%)->122M(48%) 0,001s
+[2026-11-04T19:49:23.982+0100][0,328s][info][gc] GC(64) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.983+0100][0,329s][info][gc] GC(64) Minor Collection (Allocation Rate) 158M(62%)->120M(47%) 0,001s
+[2026-11-04T19:49:23.984+0100][0,330s][info][gc] GC(65) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.984+0100][0,330s][info][gc] GC(65) Minor Collection (Allocation Rate) 158M(62%)->122M(48%) 0,001s
+[2026-11-04T19:49:23.985+0100][0,331s][info][gc] GC(66) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.986+0100][0,332s][info][gc] GC(66) Minor Collection (Allocation Rate) 168M(66%)->124M(48%) 0,001s
+[2026-11-04T19:49:23.988+0100][0,334s][info][gc] GC(67) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.990+0100][0,336s][info][gc] GC(67) Minor Collection (Allocation Rate) 172M(67%)->138M(54%) 0,001s
+[2026-11-04T19:49:23.990+0100][0,337s][info][gc] GC(68) Major Collection (System.gc())
+[2026-11-04T19:49:23.994+0100][0,340s][info][gc] GC(68) Major Collection (System.gc()) 150M(59%)->132M(52%) 0,003s
+[2026-11-04T19:49:23.995+0100][0,341s][info][gc] GC(69) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.995+0100][0,341s][info][gc] GC(69) Minor Collection (Allocation Rate) 146M(57%)->152M(59%) 0,001s
+[2026-11-04T19:49:23.996+0100][0,342s][info][gc] GC(70) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.996+0100][0,342s][info][gc] GC(70) Minor Collection (Allocation Rate) 154M(60%)->160M(62%) 0,001s
+[2026-11-04T19:49:23.996+0100][0,342s][info][gc] GC(71) Major Collection (Allocation Rate)
+[2026-11-04T19:49:23.997+0100][0,343s][info][gc] GC(72) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.998+0100][0,344s][info][gc] GC(72) Minor Collection (Allocation Rate) 172M(67%)->180M(70%) 0,001s
+[2026-11-04T19:49:23.998+0100][0,344s][info][gc] GC(73) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:23.999+0100][0,345s][info][gc] GC(73) Minor Collection (Allocation Rate) 180M(70%)->188M(73%) 0,001s
+[2026-11-04T19:49:23.999+0100][0,346s][info][gc] GC(74) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:24.000+0100][0,347s][info][gc] GC(74) Minor Collection (Allocation Rate) 190M(74%)->196M(77%) 0,001s
+[2026-11-04T19:49:24.000+0100][0,347s][info][gc] GC(71) Major Collection (Allocation Rate) 160M(62%)->196M(77%) 0,004s
+[2026-11-04T19:49:24.001+0100][0,347s][info][gc] GC(75) Major Collection (Allocation Rate)
+[2026-11-04T19:49:24.002+0100][0,348s][info][gc] GC(76) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:24.003+0100][0,349s][info][gc] GC(76) Minor Collection (Allocation Rate) 202M(79%)->208M(81%) 0,001s
+[2026-11-04T19:49:24.004+0100][0,350s][info][gc] GC(75) Major Collection (Allocation Rate) 198M(77%)->202M(79%) 0,003s
+[2026-11-04T19:49:24.004+0100][0,350s][info][gc] GC(77) Major Collection (System.gc())
+[2026-11-04T19:49:24.006+0100][0,352s][info][gc] GC(77) Major Collection (System.gc()) 202M(79%)->192M(75%) 0,002s
+[2026-11-04T19:49:24.008+0100][0,354s][info][gc] GC(78) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:24.009+0100][0,355s][info][gc] GC(78) Minor Collection (Allocation Rate) 206M(80%)->208M(81%) 0,001s
+[2026-11-04T19:49:24.009+0100][0,355s][info][gc] GC(79) Major Collection (Allocation Rate)
+[2026-11-04T19:49:24.011+0100][0,357s][info][gc] GC(79) Major Collection (Allocation Rate) 208M(81%)->216M(84%) 0,002s
+[2026-11-04T19:49:24.012+0100][0,358s][info][gc] GC(80) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:24.013+0100][0,359s][info][gc] GC(80) Minor Collection (Allocation Rate) 220M(86%)->224M(88%) 0,001s
+[2026-11-04T19:49:24.013+0100][0,359s][info][gc] GC(81) Major Collection (Allocation Rate)
+[2026-11-04T19:49:24.015+0100][0,362s][info][gc] GC(82) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:24.017+0100][0,363s][info][gc] GC(82) Minor Collection (Allocation Rate) 234M(91%)->240M(94%) 0,002s
+[2026-11-04T19:49:24.017+0100][0,363s][info][gc] GC(81) Major Collection (Allocation Rate) 224M(88%)->240M(94%) 0,004s
+[2026-11-04T19:49:24.017+0100][0,363s][info][gc] GC(83) Major Collection (Allocation Rate)
+[2026-11-04T19:49:24.018+0100][0,365s][info][gc] GC(84) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:24.020+0100][0,366s][info][gc] GC(84) Minor Collection (Allocation Rate) 248M(97%)->252M(98%) 0,001s
+[2026-11-04T19:49:24.020+0100][0,366s][info][gc] GC(83) Major Collection (Allocation Rate) 242M(95%)->250M(98%) 0,003s
+[2026-11-04T19:49:24.021+0100][0,367s][info][gc] GC(85) Major Collection (Allocation Rate)
+[2026-11-04T19:49:24.021+0100][0,367s][info][gc] GC(86) Minor Collection (Allocation Rate)
+[2026-11-04T19:49:24.022+0100][0,368s][info][gc] GC(86) Minor Collection (Allocation Rate) 256M(100%)->256M(100%) 0,001s
+[2026-11-04T19:49:24.022+0100][0,368s][info][gc] GC(87) Minor Collection (Allocation Stall)
+[2026-11-04T19:49:24.022+0100][0,368s][info][gc] GC(87) Minor Collection (Allocation Stall) 256M(100%)->256M(100%) 0,000s
+[2026-11-04T19:49:24.023+0100][0,369s][info][gc] Allocation Stall (main) 1,734ms
+[2026-11-04T19:49:24.023+0100][0,369s][info][gc] GC(85) Major Collection (Allocation Rate) 252M(98%)->256M(100%) 0,003s
+[2026-11-04T19:49:24.024+0100][0,370s][info][gc] GC(88) Minor Collection (Allocation Stall)
+[2026-11-04T19:49:24.024+0100][0,370s][info][gc] GC(88) Minor Collection (Allocation Stall) 256M(100%)->256M(100%) 0,000s
+[2026-11-04T19:49:24.024+0100][0,370s][info][gc] GC(89) Major Collection (Allocation Stall)
+[2026-11-04T19:49:24.025+0100][0,372s][info][gc] Allocation Stall (main) 1,763ms
+[2026-11-04T19:49:24.026+0100][0,372s][info][gc] GC(89) Major Collection (Allocation Stall) 256M(100%)->254M(99%) 0,002s
+[2026-11-04T19:49:24.026+0100][0,372s][info][gc] GC(90) Minor Collection (Allocation Stall)
+[2026-11-04T19:49:24.027+0100][0,373s][info][gc] GC(90) Minor Collection (Allocation Stall) 256M(100%)->256M(100%) 0,000s
+[2026-11-04T19:49:24.027+0100][0,373s][info][gc] GC(91) Major Collection (Allocation Stall)
+[2026-11-04T19:49:24.028+0100][0,374s][info][gc] GC(91) Major Collection (Allocation Stall) 256M(100%)->256M(100%) 0,001s
+[2026-11-04T19:49:24.028+0100][0,374s][info][gc] Allocation Stall (main) 1,795ms
+[2026-11-04T19:49:24.028+0100][0,374s][info][gc] Out Of Memory (main)
+[2026-11-04T19:49:24.028+0100][0,374s][info][gc] GC(92) Minor Collection (Allocation Stall)
+[2026-11-04T19:49:24.029+0100][0,375s][info][gc] GC(92) Minor Collection (Allocation Stall) 256M(100%)->256M(100%) 0,000s
+[2026-11-04T19:49:24.029+0100][0,375s][info][gc] GC(93) Major Collection (Allocation Stall)
+[2026-11-04T19:49:24.030+0100][0,376s][info][gc] GC(93) Major Collection (Allocation Stall) 256M(100%)->256M(100%) 0,001s
+[2026-11-04T19:49:24.030+0100][0,376s][info][gc] Allocation Stall (main) 1,730ms
+[2026-11-04T19:49:24.030+0100][0,376s][info][gc] GC(94) Minor Collection (Allocation Stall)
+[2026-11-04T19:49:24.030+0100][0,376s][info][gc] GC(94) Minor Collection (Allocation Stall) 256M(100%)->256M(100%) 0,000s
+[2026-11-04T19:49:24.030+0100][0,376s][info][gc] GC(95) Major Collection (Allocation Stall)
+[2026-11-04T19:49:24.032+0100][0,378s][info][gc] GC(95) Major Collection (Allocation Stall) 256M(100%)->256M(100%) 0,001s
+[2026-11-04T19:49:24.032+0100][0,378s][info][gc] Allocation Stall (main) 1,649ms
+[2026-11-04T19:49:24.032+0100][0,378s][info][gc] Out Of Memory (main)
+[2026-11-04T19:49:24.032+0100][0,378s][info][gc] GC(96) Minor Collection (Allocation Stall)
+[2026-11-04T19:49:24.032+0100][0,378s][info][gc] GC(96) Minor Collection (Allocation Stall) 256M(100%)->256M(100%) 0,000s
+[2026-11-04T19:49:24.032+0100][0,378s][info][gc] GC(97) Major Collection (Allocation Stall)
+[2026-11-04T19:49:24.033+0100][0,379s][info][gc] GC(97) Major Collection (Allocation Stall) 256M(100%)->256M(100%) 0,001s
+[2026-11-04T19:49:24.033+0100][0,379s][info][gc] Allocation Stall (Unknown thread) 1,634ms
+[2026-11-04T19:49:24.033+0100][0,379s][info][gc] GC(98) Minor Collection (Allocation Stall)
+[2026-11-04T19:49:24.034+0100][0,380s][info][gc] GC(98) Minor Collection (Allocation Stall) 256M(100%)->256M(100%) 0,000s
+[2026-11-04T19:49:24.034+0100][0,380s][info][gc] GC(99) Major Collection (Allocation Stall)
+[2026-11-04T19:49:24.035+0100][0,381s][info][gc] GC(99) Major Collection (Allocation Stall) 256M(100%)->256M(100%) 0,001s
+[2026-11-04T19:49:24.035+0100][0,381s][info][gc] Allocation Stall (Unknown thread) 1,615ms
+[2026-11-04T19:49:24.035+0100][0,381s][info][gc] Out Of Memory (Unknown thread)

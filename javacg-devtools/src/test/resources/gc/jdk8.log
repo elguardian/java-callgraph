@@ -1,0 +1,10 @@
+Java HotSpot(TM) 64-Bit Server VM (25.381-b09) for linux-amd64 JRE (1.8.0_381-b09), built on Jun 14 2023
+CommandLine flags: -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+UseParallelGC
+2024-05-01T10:00:01.234+0000: 1.234: [GC (Allocation Failure) [PSYoungGen: 33280K->5104K(38400K)] 33280K->6120K(125952K), 0.0061230 secs] [Times: user=0.02 sys=0.00, real=0.01 secs]
+2024-05-01T10:00:02.500+0000: 2.500: [GC (Allocation Failure) [PSYoungGen: 38384K->5104K(71680K)] 39400K->20000K(159232K), 0.0101230 secs] [Times: user=0.03 sys=0.00, real=0.01 secs]
+2024-05-01T10:00:05.000+0000: 5.000: [Full GC (Ergonomics) [PSYoungGen: 5104K->0K(71680K)] [ParOldGen: 80000K->60000K(87552K)] 85104K->60000K(159232K), [Metaspace: 3000K->3000K(1056768K)], 0.2501230 secs] [Times: user=0.50 sys=0.01, real=0.25 secs]
+2024-05-01T10:00:09.000+0000: 9.000: [Full GC (Ergonomics) [PSYoungGen: 6000K->0K(71680K)] [ParOldGen: 85000K->70000K(87552K)] 91000K->70000K(159232K), [Metaspace: 3000K->3000K(1056768K)], 0.3001230 secs] [Times: user=0.60 sys=0.01, real=0.30 secs]
+2024-05-01T10:00:12.000+0000: 12.000: [GC pause (G1 Evacuation Pause) (young), 0.0123456 secs]
+   [Parallel Time: 11.5 ms, GC Workers: 4]
+   [Eden: 24.0M(24.0M)->0.0B(21.0M) Survivors: 0.0B->3072.0K Heap: 24.0M(256.0M)->4096.0K(256.0M)]
+ [Times: user=0.04 sys=0.00, real=0.01 secs]

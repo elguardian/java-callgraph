@@ -33,6 +33,7 @@ final class JavacgTools {
         all.addAll(new TimelineTools().tools());
         all.addAll(jobs.tools());
         all.addAll(new ThreadTools().tools());
+        all.addAll(new GcTools().tools());
         all.forEach(t -> tools.put(t.name(), t));
     }
 
