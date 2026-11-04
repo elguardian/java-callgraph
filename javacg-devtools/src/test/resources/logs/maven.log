@@ -1,0 +1,4 @@
+10:00:00.100 [main] [INFO] Scanning for projects...
+10:00:01.200 [mvn-builder-core] [INFO] Building core 1.0 [1/2]
+10:00:03.000 [mvn-builder-core] [WARNING] deprecated API
+10:00:04.500 [main] [ERROR] BUILD FAILURE

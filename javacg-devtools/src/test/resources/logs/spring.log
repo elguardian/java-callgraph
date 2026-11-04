@@ -1,0 +1,2 @@
+2024-05-01T10:00:00.123+02:00  INFO 4242 --- [           main] com.acme.DemoApplication                 : Starting DemoApplication
+2024-05-01T10:00:01.456+02:00  WARN 4242 --- [demo] [nio-8080-exec-1] o.s.web.servlet.PageNotFound             : No mapping for GET /x

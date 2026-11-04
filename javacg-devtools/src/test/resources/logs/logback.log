@@ -1,0 +1,5 @@
+10:00:00.001 [main] INFO  com.acme.App - Starting
+10:00:00.020 [pool-1-thread-1] DEBUG com.acme.Worker - picked job 7
+10:00:00.050 [pool-1-thread-2] ERROR com.acme.Worker - job 8 failed
+java.lang.RuntimeException: boom
+	at com.acme.Worker.run(Worker.java:21)

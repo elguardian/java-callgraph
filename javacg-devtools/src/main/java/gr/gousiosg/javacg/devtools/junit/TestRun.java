@@ -182,15 +182,9 @@ public final class TestRun {
         return m;
     }
 
-    private static final Pattern VARIABLE = Pattern.compile(
-            "<[^<>]*>|\"[^\"]*\"|'[^']*'|\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b|\\b0x[0-9a-fA-F]+\\b|\\b\\d+(\\.\\d+)?\\b");
-
     /** A message with its values replaced by {@code <*>}: {@code expected: <1> but was: <2>} → {@code expected: <*> but was: <*>}. */
     public static String template(String message) {
-        if (message == null) {
-            return "";
-        }
-        return VARIABLE.matcher(firstLine(message)).replaceAll("<*>");
+        return gr.gousiosg.javacg.devtools.logs.Templates.of(message);
     }
 
     static String firstLine(String s) {

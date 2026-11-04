@@ -1,0 +1,18 @@
+2024-05-01 10:00:00,100 INFO  [org.jboss.as.server] (Controller Boot Thread) WFLYSRV0039: Creating http management service
+2024-05-01 10:00:01,250 WARN  [org.jboss.as.txn] (ServerService Thread Pool -- 74) WFLYTX0013: Node identifier property is set to the default value 1
+2024-05-01 10:00:02,500 ERROR [com.acme.OrderService] (default task-1) Order 17 failed
+java.lang.IllegalStateException: cannot save order 17
+	at com.acme.OrderService.save(OrderService.java:88)
+	at com.acme.Api.post(Api.java:12)
+Caused by: java.sql.SQLException: duplicate key
+	at com.acme.Dao.insert(Dao.java:30)
+	... 2 more
+2024-05-01 10:00:03,000 ERROR [com.acme.OrderService] (default task-2) Order 18 failed
+java.lang.IllegalStateException: cannot save order 18
+	at com.acme.OrderService.save(OrderService.java:88)
+	at com.acme.Api.post(Api.java:12)
+Caused by: java.sql.SQLException: duplicate key
+	at com.acme.Dao.insert(Dao.java:31)
+	... 2 more
+2024-05-01 10:01:05,000 INFO  [com.acme.Api] (default task-1) request 42 took 15 ms
+2024-05-01 10:01:06,000 INFO  [com.acme.Api] (default task-3) request 43 took 7 ms

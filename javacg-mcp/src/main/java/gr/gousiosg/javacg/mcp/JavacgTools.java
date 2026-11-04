@@ -27,6 +27,7 @@ final class JavacgTools {
         all.addAll(new LiveTools().tools());
         all.addAll(new TableTools().tools());
         all.addAll(new JunitTools().tools());
+        all.addAll(new LogTools().tools());
         all.forEach(t -> tools.put(t.name(), t));
     }
 
