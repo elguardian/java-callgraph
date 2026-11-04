@@ -18,4 +18,12 @@ public interface RecorderControlMXBean {
     String getRecordingDirectory();
 
     String getOutputDirectory();
+
+    /** Starts a method watch; returns {@code {"id":...}} or {@code {"error":...}}. See the agent's WatchControl. */
+    String watch(String spec);
+
+    /** A watch's results as JSON; {@code stop} ends it and restores the methods. */
+    String watchResult(String id, boolean stop);
+
+    String[] getWatches();
 }

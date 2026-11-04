@@ -7,6 +7,7 @@ import java.util.List;
 
 import gr.gousiosg.javacg.rt.Recorder;
 import gr.gousiosg.javacg.rt.RecorderControl;
+import gr.gousiosg.javacg.rt.Watch;
 
 /** Second boot stage, loaded once the runtime is on the bootstrap class path. */
 final class Installer {
@@ -25,6 +26,7 @@ final class Installer {
         if (attached) {
             retransformLoaded(config, inst);
         }
+        Watch.controller(new WatchControl(inst));
         if (config.jmxDelay != AgentConfig.JMX_OFF) {
             RecorderControl.registerLater(config.jmxDelay);
         }

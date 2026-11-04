@@ -182,7 +182,7 @@ final class LiveTools {
                 });
     }
 
-    private static JMXConnector connect(ToolArgs args) throws IOException {
+    static JMXConnector connect(ToolArgs args) throws IOException {
         boolean byPid = args.has("pid");
         boolean byUrl = args.has("jmx_url");
         if (byPid == byUrl) {
@@ -221,7 +221,7 @@ final class LiveTools {
         }
     }
 
-    private static VirtualMachine attach(String pid) throws IOException {
+    static VirtualMachine attach(String pid) throws IOException {
         try {
             return VirtualMachine.attach(pid);
         } catch (AttachNotSupportedException e) {
@@ -248,7 +248,7 @@ final class LiveTools {
         }
     }
 
-    private static ObjectName recorderName() {
+    static ObjectName recorderName() {
         try {
             return new ObjectName(RecorderControl.OBJECT_NAME);
         } catch (MalformedObjectNameException e) {

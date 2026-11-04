@@ -70,4 +70,22 @@ public final class RecorderControl implements RecorderControlMXBean {
     public String getOutputDirectory() {
         return Recorder.outputDirectory();
     }
+
+    @Override
+    public String watch(String spec) {
+        WatchController c = Watch.controller();
+        return c == null ? "{\"error\":\"the agent did not install method watches\"}" : c.start(spec);
+    }
+
+    @Override
+    public String watchResult(String id, boolean stop) {
+        WatchController c = Watch.controller();
+        return c == null ? "{\"error\":\"the agent did not install method watches\"}" : c.result(id, stop);
+    }
+
+    @Override
+    public String[] getWatches() {
+        WatchController c = Watch.controller();
+        return c == null ? new String[0] : c.list();
+    }
 }
