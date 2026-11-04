@@ -23,6 +23,7 @@ final class JavacgTools {
     }
 
     JavacgTools(Models models) {
+        Jobs jobs = new Jobs();
         List<ToolDef> all = new ArrayList<>(new AnalysisTools(models).tools());
         all.addAll(new LiveTools().tools());
         all.addAll(new TableTools().tools());
@@ -30,6 +31,8 @@ final class JavacgTools {
         all.addAll(new LogTools().tools());
         all.addAll(new MavenTools().tools());
         all.addAll(new TimelineTools().tools());
+        all.addAll(jobs.tools());
+        all.addAll(new ThreadTools().tools());
         all.forEach(t -> tools.put(t.name(), t));
     }
 

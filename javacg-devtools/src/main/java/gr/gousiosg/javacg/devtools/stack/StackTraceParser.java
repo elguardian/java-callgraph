@@ -166,6 +166,12 @@ public final class StackTraceParser {
         return n;
     }
 
+    /** One {@code at ...} line as a frame, if it is one. */
+    public static Optional<StackTrace.Frame> parseFrame(String line) {
+        Matcher f = FRAME.matcher(line);
+        return f.matches() ? Optional.of(frame(f)) : Optional.empty();
+    }
+
     private static StackTrace.Frame frame(Matcher f) {
         String p1 = f.group("p1");
         String p2 = f.group("p2");

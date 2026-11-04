@@ -1,0 +1,45 @@
+10:15:01,100 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: started
+2024-05-01 10:20:00
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (25.381-b09 mixed mode):
+
+"default task-13" #246 prio=5 os_prio=0 tid=0x00007f1c2c0a2000 nid=0x5a40 waiting for monitor entry [0x00007f1b9a3f2000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at org.acme.Cache.get(Cache.java:41)
+	- waiting to lock <0x00000000c1a2b3c4> (a org.acme.Cache)
+	at org.acme.Api.handle(Api.java:20)
+	at io.undertow.servlet.handlers.ServletHandler.handleRequest(ServletHandler.java:104)
+
+"default task-12" #245 prio=5 os_prio=0 tid=0x00007f1c2c0a1000 nid=0x5a3f waiting for monitor entry [0x00007f1b9a4f2000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at org.acme.Cache.get(Cache.java:41)
+	- waiting to lock <0x00000000c1a2b3c4> (a org.acme.Cache)
+	at org.acme.Api.handle(Api.java:20)
+	at io.undertow.servlet.handlers.ServletHandler.handleRequest(ServletHandler.java:104)
+
+"default task-7" #230 prio=5 os_prio=0 tid=0x00007f1c2c09a000 nid=0x5a30 runnable [0x00007f1b9b0f2000]
+   java.lang.Thread.State: RUNNABLE
+	at java.net.SocketInputStream.socketRead0(Native Method)
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116)
+	at org.acme.Remote.call(Remote.java:77)
+	at org.acme.Cache.load(Cache.java:60)
+	at org.acme.Cache.get(Cache.java:42)
+	- locked <0x00000000c1a2b3c4> (a org.acme.Cache)
+	at org.acme.Api.handle(Api.java:20)
+
+"default task-3" #220 prio=5 os_prio=0 tid=0x00007f1c2c090000 nid=0x5a20 waiting on condition [0x00007f1b9c0f2000]
+   java.lang.Thread.State: WAITING (parking)
+	at sun.misc.Unsafe.park(Native Method)
+	- parking to wait for  <0x00000000c0001111> (a java.util.concurrent.SynchronousQueue$TransferStack)
+	at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:458)
+	at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+	at java.util.concurrent.SynchronousQueue.take(SynchronousQueue.java:924)
+	at org.jboss.threads.EnhancedQueueExecutor$PoolThreadNode.park(EnhancedQueueExecutor.java:2000)
+
+"VM Thread" os_prio=0 tid=0x00007f1c2c001000 nid=0x5a01 runnable 
+
+JNI global references: 1234
+
+Heap
+ garbage-first heap   total 1048576K, used 524288K
+10:20:05,000 INFO  [org.acme.Api] (default task-1) still serving

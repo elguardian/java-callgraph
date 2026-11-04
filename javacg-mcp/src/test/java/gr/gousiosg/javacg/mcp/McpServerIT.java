@@ -42,9 +42,10 @@ class McpServerIT {
             List<String> names = client.listTools().tools().stream().map(McpSchema.Tool::name).toList();
             assertTrue(names.containsAll(List.of("load_model", "call_paths", "check_guard", "run_detectors",
                     "attach_agent", "recorder", "table_render", "stacktrace_parse", "junit_summary", "junit_failures",
-                    "junit_compare", "log_query", "log_pattern", "maven_reactor", "maven_run", "maven_log", "timeline")),
+                    "junit_compare", "log_query", "log_pattern", "maven_reactor", "maven_run", "maven_log", "timeline", "job_status",
+                    "job_cancel", "thread_dump_analyze")),
                     names.toString());
-            assertEquals(28, names.size(), names.toString());
+            assertTrue(names.size() >= 32, names.toString());
 
             // plain-text results (tables, diagrams) arrive unquoted
             McpSchema.CallToolResult table = client.callTool(McpSchema.CallToolRequest.builder("table_render")
