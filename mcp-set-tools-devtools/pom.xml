@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.elguardian</groupId>
+    <artifactId>mcp-set-tools-parent</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>mcp-set-tools-devtools</artifactId>
+  <name>mcp-set-tools-devtools</name>
+  <description>Developer tools: tables, stack traces, JUnit reports, Maven, logs and thread timelines</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-commons</artifactId>
+    </dependency>
+    <dependency>
+      <!-- recordings (mcp-set-tools-core) and method patterns -->
+      <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-analyze</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-testkit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

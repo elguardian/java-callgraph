@@ -3,12 +3,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>gr.gousiosg</groupId>
-  <artifactId>javacg-parent</artifactId>
+  <groupId>io.github.elguardian</groupId>
+  <artifactId>mcp-set-tools-parent</artifactId>
   <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>javacg</name>
+  <name>mcp-set-tools</name>
   <description>Hybrid static + dynamic call graph analysis and bug finding for Java</description>
 
   <licenses>
@@ -19,18 +19,18 @@
   </licenses>
 
   <modules>
-    <module>javacg-commons</module>
-    <module>javacg-tool-api</module>
-    <module>javacg-testkit</module>
-    <module>javacg-rt</module>
-    <module>javacg-core</module>
-    <module>javacg-static</module>
-    <module>javacg-agent</module>
-    <module>javacg-analyze</module>
-    <module>javacg-cli</module>
-    <module>javacg-maven-plugin</module>
-    <module>javacg-devtools</module>
-    <module>javacg-mcp</module>
+    <module>mcp-set-tools-commons</module>
+    <module>mcp-set-tools-tool-api</module>
+    <module>mcp-set-tools-testkit</module>
+    <module>mcp-set-tools-rt</module>
+    <module>mcp-set-tools-core</module>
+    <module>mcp-set-tools-static</module>
+    <module>mcp-set-tools-agent</module>
+    <module>mcp-set-tools-analyze</module>
+    <module>mcp-set-tools-cli</module>
+    <module>mcp-set-tools-maven-plugin</module>
+    <module>mcp-set-tools-devtools</module>
+    <module>mcp-set-tools-mcp</module>
   </modules>
 
   <properties>
@@ -79,47 +79,47 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-commons</artifactId>
+        <artifactId>mcp-set-tools-commons</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-tool-api</artifactId>
+        <artifactId>mcp-set-tools-tool-api</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-testkit</artifactId>
+        <artifactId>mcp-set-tools-testkit</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-rt</artifactId>
+        <artifactId>mcp-set-tools-rt</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-core</artifactId>
+        <artifactId>mcp-set-tools-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-static</artifactId>
+        <artifactId>mcp-set-tools-static</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-analyze</artifactId>
+        <artifactId>mcp-set-tools-analyze</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-agent</artifactId>
+        <artifactId>mcp-set-tools-agent</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>javacg-devtools</artifactId>
+        <artifactId>mcp-set-tools-devtools</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

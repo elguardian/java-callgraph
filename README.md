@@ -1,5 +1,11 @@
-java-callgraph
-==============
+mcp-set-tools
+=============
+
+A set of tools for working on Java projects, served to AI assistants over the Model Context
+Protocol: call-graph analysis, live JVM diagnostics, build and test results, logs, timelines,
+known issues and a daily status of pending work. It grew out of
+[java-callgraph](https://github.com/gousiosg/java-callgraph), whose call-graph analysis it still
+contains.
 
 Hybrid static + dynamic analysis for Java programs. The tool builds call graphs from
 bytecode (static) and from an instrumenting Java agent (dynamic), merges them, and runs bug
@@ -7,23 +13,23 @@ detectors over the result. The primary target is WildFly under Arquillian; plain
 applications work the same way.
 
 Version 2 is a rewrite on [ASM](https://asm.ow2.io/). The original BCEL/Javassist tool
-(`javacg-static` / `javacg-dynamic`) has been removed; see [PLAN.md](PLAN.md) for the design
+(`javacg-static` / `javacg-dynamic` of java-callgraph) has been removed; see [PLAN.md](PLAN.md) for the design
 and the phase-by-phase roadmap.
 
 ## Modules
 
 | Module | Purpose |
 |--------|---------|
-| `javacg-core` | Shared model: `MethodId`, `CallGraph` with per-edge provenance, JSON/DOT output, trace reader |
-| `javacg-rt` | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
-| `javacg-agent` | Java agent, packaged as `javacg-agent/target/javacg-agent.jar` |
-| `javacg-static` | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
-| `javacg-analyze` | Merged static + runtime model, graph queries, gap report, bug detectors |
-| `javacg-cli` | Command line front end, packaged as `javacg-cli/target/javacg.jar` |
-| `javacg-maven-plugin` | `prepare-agent` and `analyze` goals for `mvn verify` |
-| `javacg-devtools` | Tables, stack traces, JUnit reports, Maven reactor/runs/logs, log parsing, thread timelines |
-| `javacg-mcp` | MCP server for AI assistants, packaged as `javacg-mcp/target/javacg-mcp.jar` |
-| `javacg-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
+| `mcp-set-tools-core` | Shared model: `MethodId`, `CallGraph` with per-edge provenance, JSON/DOT output, trace reader |
+| `mcp-set-tools-rt` | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
+| `mcp-set-tools-agent` | Java agent, packaged as `mcp-set-tools-agent/target/mcp-set-tools-agent.jar` |
+| `mcp-set-tools-static` | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
+| `mcp-set-tools-analyze` | Merged static + runtime model, graph queries, gap report, bug detectors |
+| `mcp-set-tools-cli` | Command line front end, packaged as `mcp-set-tools-cli/target/mcp-set-tools.jar` |
+| `mcp-set-tools-maven-plugin` | `prepare-agent` and `analyze` goals for `mvn verify` |
+| `mcp-set-tools-devtools` | Tables, stack traces, JUnit reports, Maven reactor/runs/logs, log parsing, thread timelines |
+| `mcp-set-tools-mcp` | MCP server for AI assistants, packaged as `mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar` |
+| `mcp-set-tools-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
 
 ## Build
 
@@ -36,7 +42,7 @@ mvn verify
 ## Static call graph
 
 ```
-java -jar javacg-cli/target/javacg.jar static [--lib deps.jar] [--algorithm cha|rta] \
+java -jar mcp-set-tools-cli/target/mcp-set-tools.jar static [--lib deps.jar] [--algorithm cha|rta] \
      [--format text|json|dot|dot-classes] [--output file] app.jar|classes/|app.war ...
 ```
 
@@ -73,7 +79,7 @@ M:class1:method1(arg_types) (type)class2:method2(arg_types)
 ## Dynamic call graph (Java agent)
 
 ```
-java -javaagent:javacg-agent.jar='incl=com\.example\..*;out=/tmp/javacg' -cp app.jar com.example.Main
+java -javaagent:mcp-set-tools-agent.jar='incl=com\.example\..*;out=/tmp/mcp-set-tools' -cp app.jar com.example.Main
 ```
 
 The agent instruments the selected classes with ASM. Every method records entry, normal
@@ -84,19 +90,19 @@ probe failure (e.g. a full disk) disables recording instead of reaching the appl
 
 ### Options
 
-`-javaagent:javacg-agent.jar=key=value;key=value...` (quote it in the shell: `;` separates
+`-javaagent:mcp-set-tools-agent.jar=key=value;key=value...` (quote it in the shell: `;` separates
 commands there).
 
 | Option | Default | Meaning |
 |--------|---------|---------|
 | `incl=re,...` | — | Classes to instrument: Java regexes that must match the whole binary class name |
 | `excl=re,...` | — | Classes to skip even if included |
-| `out=dir` | `${java.io.tmpdir}/javacg/<pid>` | Base directory; each recording is a subdirectory |
+| `out=dir` | `${java.io.tmpdir}/mcp-set-tools/<pid>` | Base directory; each recording is a subdirectory |
 | `label=name` | `default` | Name of the recording started at startup |
 | `record=startup\|manual` | `startup` | `manual` records nothing until `Recorder.start(label)` |
 | `args=none\|types\|tostring` | `none` | Argument capture: runtime classes, or `toString()` values (200 chars max each) |
 | `locks=true\|false` | `false` | Record monitor, `synchronized` method and `java.util.concurrent` `Lock` acquire/release |
-| `jmx=auto\|off\|<ms>` | `auto` | Delay before the `javacg:type=Recorder` MBean is registered; `auto` = 20 s on WildFly, else 0 |
+| `jmx=auto\|off\|<ms>` | `auto` | Delay before the `mcp-set-tools:type=Recorder` MBean is registered; `auto` = 20 s on WildFly, else 0 |
 | `verbose=true\|false` | `false` | Log every instrumented class |
 
 `out` and `label` may reference system properties as `%{name}` or `%{name:default}`. With
@@ -108,7 +114,7 @@ substitute it).
 never instrumented. Invalid patterns or options are reported on stderr and ignored.
 
 The agent can also be loaded into a running JVM (`jcmd <pid> JVMTI.agent_load
-/path/javacg-agent.jar '<options>'`, or the Attach API); already loaded classes that match
+/path/mcp-set-tools-agent.jar '<options>'`, or the Attach API); already loaded classes that match
 are retransformed. Methods that are executing at that moment keep running uninstrumented.
 
 On startup the JVM may print *"Sharing is only supported for boot loader classes because
@@ -121,21 +127,21 @@ A recording is the directory `<out>/<label>/`. From code running in the traced J
 example an Arquillian test running in the container):
 
 ```java
-import gr.gousiosg.javacg.rt.Recorder;   // javacg-rt, scope provided: never package it
+import io.github.elguardian.mcpsettools.rt.Recorder;   // mcp-set-tools-rt, scope provided: never package it
 
 Recorder.start("MyTest#testLogin");      // completes the current recording, starts a new one
 ...
 Recorder.stop();                         // writes the symbol and thread tables
 ```
 
-From outside, use the MBean `javacg:type=Recorder` (operations `start(label)`, `stop()`,
+From outside, use the MBean `mcp-set-tools:type=Recorder` (operations `start(label)`, `stop()`,
 `dump()`; attributes `Recording`, `Label`, `RecordingDirectory`, `OutputDirectory`). The
 current recording is also completed by a shutdown hook.
 
 ### Reading a recording
 
 ```
-java -jar javacg.jar trace [--format text|pairs|timing|json|dot] <out>/<label>
+java -jar mcp-set-tools.jar trace [--format text|pairs|timing|json|dot] <out>/<label>
 ```
 
 * `text` — the original `calltrace.txt` lines: `>[depth][tid]pkg.Class:method=nanos` on
@@ -147,13 +153,13 @@ java -jar javacg.jar trace [--format text|pairs|timing|json|dot] <out>/<label>
   `process_trace.rb` computed).
 * `json` / `dot` — the runtime call graph.
 
-The files in a recording are described in `javacg-rt/.../TraceFormat.java`; the
+The files in a recording are described in `mcp-set-tools-rt/.../TraceFormat.java`; the
 `symbols.tsv` table lists every instrumented method, including the ones that never ran.
 
 ## Merging static and runtime graphs
 
 ```
-java -jar javacg.jar merge --app app.war --lib deps.jar --trace /tmp/javacg [--format gaps|json|dot|dot-classes]
+java -jar mcp-set-tools.jar merge --app app.war --lib deps.jar --trace /tmp/mcp-set-tools [--format gaps|json|dot|dot-classes]
 ```
 
 `--trace` takes a recording directory or the agent's `out=` directory (every recording in it
@@ -169,11 +175,11 @@ The default `gaps` report lists where the two views disagree:
 ## Queries
 
 ```
-java -jar javacg.jar query paths   --app app.jar --from 'com.acme.Api.*' --to 'com.acme.Dao.delete'
-java -jar javacg.jar query guard   --app app.jar --trace out/ --from 'com.acme.Api.*' \
+java -jar mcp-set-tools.jar query paths   --app app.jar --from 'com.acme.Api.*' --to 'com.acme.Dao.delete'
+java -jar mcp-set-tools.jar query guard   --app app.jar --trace out/ --from 'com.acme.Api.*' \
                                    --to 'com.acme.Dao.delete' --through 'com.acme.Security.check*'
-java -jar javacg.jar query callers --trace out/ --method 'com.acme.Dao.*' --max-depth 3
-java -jar javacg.jar query callees --app app.jar --method 'com.acme.Api.login(java.lang.String)'
+java -jar mcp-set-tools.jar query callers --trace out/ --method 'com.acme.Dao.*' --max-depth 3
+java -jar mcp-set-tools.jar query callees --app app.jar --method 'com.acme.Api.login(java.lang.String)'
 ```
 
 Method patterns are `pkg.Class.method` with `*` wildcards and an optional parameter suffix,
@@ -190,7 +196,7 @@ guarded call (`check(); delete();`) is a sibling, not a caller, and does not cou
 ## Bug detectors
 
 ```
-java -jar javacg.jar analyze --app app.war --lib deps.jar --trace /tmp/javacg \
+java -jar mcp-set-tools.jar analyze --app app.war --lib deps.jar --trace /tmp/mcp-set-tools \
      [--detector resources --detector nulls ...] [--min-severity low] [--fail-on high]
 ```
 
@@ -218,7 +224,7 @@ Findings backed by a recording are marked *confirmed at runtime* and listed firs
 
 `--sarif report.sarif --source-root src/main/java` additionally writes SARIF 2.1.0 (or use
 `--format sarif`), which GitHub code scanning, IDEs and CI dashboards read. Each result has
-the source file and line, the method as a logical location, related locations, javacg's
+the source file and line, the method as a logical location, related locations, mcp-set-tools's
 severity/confidence and the runtime evidence, and a line-independent fingerprint.
 
 Runtime data strengthens static findings: a null dereference in a method that threw an NPE,
@@ -243,15 +249,15 @@ How the static detectors work, and their limits:
 
 ## Maven plugin
 
-`prepare-agent` puts the agent argument in the `javacg.argLine` property; tests run under the
+`prepare-agent` puts the agent argument in the `mcpsettools.argLine` property; tests run under the
 agent; `analyze` (bound to `verify`) analyzes `target/classes` with the runtime classpath as
-libraries, loads the recordings, and writes `target/javacg-report.txt` and
-`target/javacg-report.sarif`.
+libraries, loads the recordings, and writes `target/mcp-set-tools-report.txt` and
+`target/mcp-set-tools-report.sarif`.
 
 ```xml
 <plugin>
-  <groupId>gr.gousiosg</groupId>
-  <artifactId>javacg-maven-plugin</artifactId>
+  <groupId>io.github.elguardian</groupId>
+  <artifactId>mcp-set-tools-maven-plugin</artifactId>
   <version>2.0.0-SNAPSHOT</version>
   <configuration>
     <includes>
@@ -271,7 +277,7 @@ libraries, loads the recordings, and writes `target/javacg-report.txt` and
 <plugin>
   <artifactId>maven-surefire-plugin</artifactId>
   <configuration>
-    <argLine>${javacg.argLine}</argLine>
+    <argLine>${mcpsettools.argLine}</argLine>
   </configuration>
 </plugin>
 ```
@@ -279,38 +285,38 @@ libraries, loads the recordings, and writes `target/javacg-report.txt` and
 | `prepare-agent` parameter | Default | |
 |---------------------------|---------|-|
 | `includes` / `excludes` | — | class regexes (`incl=` / `excl=`) |
-| `outputDirectory` | `target/javacg` | recordings; cleaned first unless `clean=false` |
+| `outputDirectory` | `target/mcp-set-tools` | recordings; cleaned first unless `clean=false` |
 | `record`, `args`, `locks`, `jmx` | `startup`, `none`, `true`, `off` | agent options |
-| `jbossModules` | `false` | also add `-Djboss.modules.system.pkgs=org.jboss.byteman,gr.gousiosg.javacg.rt` |
-| `propertyName` | `javacg.argLine` | property receiving the JVM arguments (`javacg.agentJar` holds the jar path) |
+| `jbossModules` | `false` | also add `-Djboss.modules.system.pkgs=org.jboss.byteman,io.github.elguardian.mcpsettools.rt` |
+| `propertyName` | `mcpsettools.argLine` | property receiving the JVM arguments (`mcpsettools.agentJar` holds the jar path) |
 
 | `analyze` parameter | Default | |
 |---------------------|---------|-|
 | `classesDirectory` | `target/classes` | application classes |
 | `useLibraries` | `true` | runtime classpath as `--lib` |
-| `recordings` | `target/javacg` | static analysis only if absent |
+| `recordings` | `target/mcp-set-tools` | static analysis only if absent |
 | `detectors` | all | detector ids |
-| `minSeverity` / `failOn` | `low` / — | `-Djavacg.failOn=high` on the command line works too |
-| `sarifFile` / `textFile` | `target/javacg-report.sarif` / `.txt` | |
+| `minSeverity` / `failOn` | `low` / — | `-Dmcpsettools.failOn=high` on the command line works too |
+| `sarifFile` / `textFile` | `target/mcp-set-tools-report.sarif` / `.txt` | |
 | `sourceRoot` | first compile source root | SARIF path prefix |
 
-All parameters can be skipped with `-Djavacg.skip`.
+All parameters can be skipped with `-Dmcpsettools.skip`.
 
 ## MCP server
 
-`javacg-mcp.jar` is a [Model Context Protocol](https://modelcontextprotocol.io) server on
+`mcp-set-tools-mcp.jar` is a [Model Context Protocol](https://modelcontextprotocol.io) server on
 stdin/stdout, so assistants such as Claude Code can analyze a program and drive recordings.
 It keeps loaded models in memory: a deployment is analyzed once per session and then queried
 many times, instead of once per CLI call.
 
 ```
-claude mcp add javacg -- java -jar /path/to/javacg-mcp/target/javacg-mcp.jar
+claude mcp add mcp-set-tools -- java -jar /path/to/mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar
 ```
 
 Other clients take the same command in their JSON configuration:
 
 ```json
-{ "mcpServers": { "javacg": { "command": "java", "args": ["-jar", "/path/to/javacg-mcp.jar"] } } }
+{ "mcpServers": { "mcp-set-tools": { "command": "java", "args": ["-jar", "/path/to/mcp-set-tools-mcp.jar"] } } }
 ```
 
 | Tool | |
@@ -326,7 +332,7 @@ Other clients take the same command in their JSON configuration:
 | `export_graph` | the merged graph, or the part reachable from/to a pattern, as JSON or DOT |
 | `list_jvms` | local JVMs and whether the agent is loaded in them |
 | `attach_agent` | loads the agent into a running JVM (Attach API); the agent jar is embedded in the server |
-| `recorder` | `status`, `start`, `stop`, `dump` through the `javacg:type=Recorder` MBean, by `pid` or `jmx_url` |
+| `recorder` | `status`, `start`, `stop`, `dump` through the `mcp-set-tools:type=Recorder` MBean, by `pid` or `jmx_url` |
 
 Method names in results use the Java form (`a.b.C.m(int,java.lang.String)`) and can be passed
 back as patterns; a pattern without a package that matches nothing is retried as `*.<pattern>`.
@@ -337,7 +343,7 @@ returned directory as `trace` and the application as `app`.
 * The agent can be loaded once per JVM; a second `attach_agent` (or `-javaagent` plus attach)
   is refused, since a second transformer would record every call twice.
 * JDK 21+ prints a warning in the target when an agent is loaded dynamically; start it with
-  `-XX:+EnableDynamicAgentLoading` to silence it. WildFly also needs `gr.gousiosg.javacg.rt` in
+  `-XX:+EnableDynamicAgentLoading` to silence it. WildFly also needs `io.github.elguardian.mcpsettools.rt` in
   `jboss.modules.system.pkgs` from server start (see below), so for WildFly prefer
   `-javaagent` with `record=manual` and use `recorder` only.
 * `recorder` by `pid` starts the target's local JMX agent if needed. `jmx_url` takes an RMI
@@ -420,7 +426,7 @@ and a known issue, finding the commit that broke something, and probing a live J
 Live-JVM tools (`pid`) use the `jcmd` of the JDK the server runs on and need the same user as
 the target. `heap_histogram` by pid counts live objects, which forces a full GC in the target
 (`all_objects` avoids it). `watch_method` shows values with `toString()`, which runs the
-target's own code; `capture: types` avoids that. JDK and javacg classes cannot be watched.
+target's own code; `capture: types` avoids that. JDK and mcp-set-tools classes cannot be watched.
 
 A trace from a customer, checked against releases:
 
@@ -432,7 +438,7 @@ A trace from a customer, checked against releases:
 returns each tag with the number of frames whose line falls in the named method, the best one,
 and the source around every frame at that tag.
 
-Known issues live in a JSON-lines file (`$JAVACG_ISSUES`, default `~/.javacg/known-issues.jsonl`)
+Known issues live in a JSON-lines file (`$MCPSETTOOLS_ISSUES`, default `~/.mcp-set-tools/known-issues.jsonl`)
 that a team can keep in a repository. With `JIRA_URL` and `JIRA_TOKEN` (plus `JIRA_USER` for
 Jira Cloud) in the server's environment, `known_issue_match` also searches Jira for the root
 exception and the first application frame, and scores the hits by the stack traces in their
@@ -468,9 +474,9 @@ sections, plus the items as data:
 * **In progress**: the remaining Jira issues.
 
 Items that changed since the previous run are marked **NEW**. The last run is kept in
-`~/.javacg/status-state.json` next to the config.
+`~/.mcp-set-tools/status-state.json` next to the config.
 
-Instances are listed in `~/.javacg/status.json` (or `$JAVACG_STATUS_CONFIG`). Tokens are named
+Instances are listed in `~/.mcp-set-tools/status.json` (or `$MCPSETTOOLS_STATUS_CONFIG`). Tokens are named
 by environment variable and set in the MCP server's environment, never in the file:
 
 ```json
@@ -484,8 +490,8 @@ by environment variable and set in the MCP server's environment, never in the fi
 ```
 
 ```
-claude mcp add javacg -e JIRA_TOKEN=... -e GITHUB_TOKEN=... -e GITLAB_TOKEN=... -e GITLAB_WORK_TOKEN=... \
-    -- java -jar /path/to/javacg-mcp.jar
+claude mcp add mcp-set-tools -e JIRA_TOKEN=... -e GITHUB_TOKEN=... -e GITLAB_TOKEN=... -e GITLAB_WORK_TOKEN=... \
+    -- java -jar /path/to/mcp-set-tools-mcp.jar
 ```
 
 The entries are:
@@ -510,13 +516,13 @@ the bootstrap class path, so its package must be listed there:
 
 ```bash
 # $WILDFLY_HOME/bin/standalone.conf
-JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=org.jboss.byteman,gr.gousiosg.javacg.rt"
-JAVA_OPTS="$JAVA_OPTS -javaagent:/path/to/javacg-agent.jar=incl=org\.jboss\.as\.jmx\..*,org\.jboss\.as\.controller\.access\..*;out=/tmp/javacg"
+JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=org.jboss.byteman,io.github.elguardian.mcpsettools.rt"
+JAVA_OPTS="$JAVA_OPTS -javaagent:/path/to/mcp-set-tools-agent.jar=incl=org\.jboss\.as\.jmx\..*,org\.jboss\.as\.controller\.access\..*;out=/tmp/mcp-set-tools"
 ```
 
 If `jboss.modules.system.pkgs` is already set (the default `standalone.conf` sets it from
 `JBOSS_MODULES_SYSTEM_PKGS`, usually `org.jboss.byteman`), append
-`,gr.gousiosg.javacg.rt` to the existing value rather than setting it twice.
+`,io.github.elguardian.mcpsettools.rt` to the existing value rather than setting it twice.
 
 With the default `jmx=auto` the agent waits 20 s before registering its MBean: touching the
 platform MBean server before WildFly has installed its own MBean server builder and log
@@ -532,8 +538,8 @@ Pass the same arguments through the container's `javaVmArguments`:
         <property name="jbossHome">${jboss.install.dir}</property>
         <property name="javaVmArguments">
             ${server.jvm.args}
-            -Djboss.modules.system.pkgs=org.jboss.byteman,gr.gousiosg.javacg.rt
-            -javaagent:/path/to/javacg-agent.jar=incl=org\.jboss\.as\.jmx\..*,org\.wildfly\.mypackage\..*;out=${project.build.directory}/javacg;record=manual
+            -Djboss.modules.system.pkgs=org.jboss.byteman,io.github.elguardian.mcpsettools.rt
+            -javaagent:/path/to/mcp-set-tools-agent.jar=incl=org\.jboss\.as\.jmx\..*,org\.wildfly\.mypackage\..*;out=${project.build.directory}/mcp-set-tools;record=manual
         </property>
     </configuration>
 </container>
@@ -552,13 +558,13 @@ With the Maven plugin, let `prepare-agent` build the arguments (`<jbossModules>t
   <artifactId>maven-failsafe-plugin</artifactId>
   <configuration>
     <systemPropertyVariables>
-      <javacg.argLine>${javacg.argLine}</javacg.argLine>
+      <mcpsettools.argLine>${mcpsettools.argLine}</mcpsettools.argLine>
     </systemPropertyVariables>
   </configuration>
 </plugin>
 
 <!-- arquillian.xml -->
-<property name="javaVmArguments">${server.jvm.args} ${javacg.argLine}</property>
+<property name="javaVmArguments">${server.jvm.args} ${mcpsettools.argLine}</property>
 ```
 
 `analyze` then runs in `verify`, after the Arquillian tests. The WildFly setup is documented

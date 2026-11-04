@@ -1,4 +1,4 @@
-# java-callgraph v2 — hybrid static + dynamic bug finder
+# mcp-set-tools (java-callgraph v2) — hybrid static + dynamic bug finder and MCP tool set
 
 Goal: instrument Java programs (primarily WildFly under Arquillian) and combine the
 runtime traces with static analysis of the bytecode to find bugs.
@@ -6,8 +6,8 @@ runtime traces with static analysis of the bytecode to find bugs.
 ## Status
 
 All phases are implemented on the `v2` branch, one commit per phase, plus an MCP server
-(`javacg-mcp`) over the analysis and live recording control, and developer tools
-(`javacg-devtools`: JUnit reports, Maven reactor/runs/logs, log queries, tables, thread
+(`mcp-set-tools-mcp`) over the analysis and live recording control, and developer tools
+(`mcp-set-tools-devtools`: JUnit reports, Maven reactor/runs/logs, log queries, tables, thread
 timelines), and sustaining tools (thread dumps, GC logs, heap histograms, JFR, method watches,
 stack trace to version mapping, known issues with Jira search, bisect), and a daily status of pending
 work across Jira, GitHub and GitLab. Not yet done:
@@ -65,40 +65,40 @@ the ASM implementation; each defect becomes a regression test for v2):
 ## Architecture
 
 ```
-              ┌────────────── javacg-core ──────────────┐
+              ┌────────────── mcp-set-tools-core ──────────────┐
               │ MethodId, ClassHierarchy, CallGraph,    │
               │ edge provenance (STATIC | DYNAMIC | BOTH)│
               └───────▲──────────────────────▲──────────┘
-     javacg-static ───┘                      └─── javacg-agent (+ trace reader)
+     mcp-set-tools-static ───┘                      └─── mcp-set-tools-agent (+ trace reader)
   (hierarchy, CHA/RTA, per-method               (enter / exit / throw, monitors,
    CFG + dataflow via ASM Analyzer)              optional field / alloc events)
               │                                    │
-              └────────► javacg-analyze ◄──────────┘
+              └────────► mcp-set-tools-analyze ◄──────────┘
                      (merge, queries, detectors)
                                │
-                          javacg-cli ──► SARIF / text / JSON / DOT
+                          mcp-set-tools-cli ──► SARIF / text / JSON / DOT
 ```
 
-Maven modules: `javacg-rt` (probe runtime), `javacg-core`, `javacg-static`, `javacg-agent`,
-`javacg-analyze`, `javacg-cli`, plus `javacg-testkit` (in-test compilation helpers).
+Maven modules: `mcp-set-tools-rt` (probe runtime), `mcp-set-tools-core`, `mcp-set-tools-static`, `mcp-set-tools-agent`,
+`mcp-set-tools-analyze`, `mcp-set-tools-cli`, plus `mcp-set-tools-testkit` (in-test compilation helpers).
 The legacy BCEL/Javassist code and `process_trace.rb` are removed in Phase 0.
 
 ## WildFly / Arquillian constraints for the agent
 
-* **Two jars.** `javacg-agent.jar` (transformer + shaded/relocated ASM, on the system
-  class path) and a tiny `javacg-rt.jar` (probe runtime only, no dependencies) appended to
+* **Two jars.** `mcp-set-tools-agent.jar` (transformer + shaded/relocated ASM, on the system
+  class path) and a tiny `mcp-set-tools-rt.jar` (probe runtime only, no dependencies) appended to
   the bootstrap class path via `appendToBootstrapClassLoaderSearch`. Only the runtime
   goes on bootstrap, so the LinkageError the README warns about (Javassist on two
   loaders) cannot happen.
-* **Relocate ASM** (`gr.gousiosg.javacg.shaded.asm`) — WildFly modules ship their own
+* **Relocate ASM** (`io.github.elguardian.mcpsettools.shaded.asm`) — WildFly modules ship their own
   ASM/ByteBuddy copies.
-* **One runtime package** (`gr.gousiosg.javacg.rt`) so the JBoss Modules setting stays a
-  single entry: `-Djboss.modules.system.pkgs=gr.gousiosg.javacg.rt`.
-* **Recording control.** The runtime registers an MBean (`javacg:type=Recorder`:
+* **One runtime package** (`io.github.elguardian.mcpsettools.rt`) so the JBoss Modules setting stays a
+  single entry: `-Djboss.modules.system.pkgs=io.github.elguardian.mcpsettools.rt`.
+* **Recording control.** The runtime registers an MBean (`mcp-set-tools:type=Recorder`:
   `start(label)`, `stop()`, `dump()`) so an Arquillian test can scope a trace to itself,
   either from inside the deployment or remotely over the management port. Default: record
   from startup (current behaviour).
-* **Output** goes to `out=<dir>` (default `${java.io.tmpdir}/javacg/<pid>`), one file
+* **Output** goes to `out=<dir>` (default `${java.io.tmpdir}/mcp-set-tools/<pid>`), one file
   per recording label, flushed on `stop()` and on JVM shutdown.
 * Ship a documented `arquillian.xml` snippet and a Maven profile that passes the agent
   arguments via `server.jvm.args`.
@@ -112,7 +112,7 @@ The legacy BCEL/Javassist code and `process_trace.rb` are removed in Phase 0.
 * `--release 17`, JUnit 5, CI matrix on 17/21/25.
 * Test harness: compile fixture sources in-test (reuse `JARBuilder`), run the agent in a
   forked JVM, assert on parsed events.
-* `javacg-core` model: `MethodId` (owner, name, descriptor), `CallGraph` with provenance
+* `mcp-set-tools-core` model: `MethodId` (owner, name, descriptor), `CallGraph` with provenance
   per edge, JSON serialization.
 
 ### Phase 1 — Static analyzer (ASM)
