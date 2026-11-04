@@ -26,14 +26,25 @@ import io.modelcontextprotocol.spec.McpSchema;
 public final class McpMain {
 
     static final String INSTRUCTIONS = """
-            javacg analyzes Java programs by combining a static call graph built from bytecode with \
-            runtime recordings made by the javacg agent. Typical workflow: load_model with the \
-            application jars/WAR as app (third-party jars as lib) and/or recording directories as trace; \
-            find_methods to get exact method names; then call_paths, check_guard, callers/callees, \
-            describe_method, gap_report, hotspots or run_detectors on the returned model_id. To record a \
-            running JVM: list_jvms, attach_agent with incl= patterns, recorder start/stop, then \
-            load_model with the stopped recording's directory as trace. Method names in results can be \
-            passed back as patterns.""";
+            javacg is a toolbox for working on Java projects.
+            Call graphs: javacg combines a static call graph built from bytecode with runtime recordings \
+            made by the javacg agent. load_model with the application jars/WAR as app (third-party jars \
+            as lib) and/or recording directories as trace; find_methods to get exact method names; then \
+            call_paths, check_guard, callers/callees, describe_method, gap_report, hotspots or \
+            run_detectors on the returned model_id. To record a running JVM: list_jvms, attach_agent \
+            with incl= patterns, recorder start/stop, then load_model with the stopped recording's \
+            directory as trace. Method names in results can be passed back as patterns.
+            Builds and tests: maven_reactor (modules, build order, what a change affects), maven_run \
+            (runs Maven, returns compiler errors, failed tests and module status instead of the raw \
+            log), maven_log (parses an existing log); junit_summary, junit_failures and junit_compare \
+            read surefire/failsafe/Gradle XML reports.
+            Logs: log_query searches, counts, groups and histograms log files by their layout pattern \
+            (presets for WildFly, logback, log4j2, Spring Boot, Maven, or 'auto'); log_pattern checks a \
+            pattern first. stacktrace_parse explains a pasted stack trace.
+            Concurrency: timeline draws what threads did over time from a recording, logs, a maven_run \
+            log or given events, with overlap and lock-wait analysis.
+            Output: tools returning lists take table_format (ascii, markdown, jira, slack, csv, tsv, \
+            html); table_render formats any rows for pasting into Jira, Slack or a terminal.""";
 
     private McpMain() {
     }

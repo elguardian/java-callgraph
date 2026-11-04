@@ -21,6 +21,7 @@ and the phase-by-phase roadmap.
 | `javacg-analyze` | Merged static + runtime model, graph queries, gap report, bug detectors |
 | `javacg-cli` | Command line front end, packaged as `javacg-cli/target/javacg.jar` |
 | `javacg-maven-plugin` | `prepare-agent` and `analyze` goals for `mvn verify` |
+| `javacg-devtools` | Tables, stack traces, JUnit reports, Maven reactor/runs/logs, log parsing, thread timelines |
 | `javacg-mcp` | MCP server for AI assistants, packaged as `javacg-mcp/target/javacg-mcp.jar` |
 | `javacg-testkit` | Test helpers: in-memory compilation of fixtures, forked JVM runs |
 
@@ -344,6 +345,60 @@ returned directory as `trace` and the application as `app`.
   the server does not bundle.
 * Recording directories are on the target's file system; `load_model` must see the same paths.
 * Logging goes to stderr (`-Dorg.slf4j.simpleLogger.defaultLogLevel=debug` for more).
+
+### Developer tools
+
+The same server carries tools for everyday work on Java projects. They need no `load_model`;
+each call reads its files again. Tools that return lists accept `table_format`
+(`ascii`, `markdown`, `jira`, `slack`, `csv`, `tsv`, `html`) and then also return the list as
+a table ready to paste.
+
+| Tool | |
+|------|-|
+| `junit_summary` | totals per module or class, slowest tests, failures with exception and first application frame, failures grouped by cause, flaky tests, from surefire/failsafe/Gradle XML reports |
+| `junit_failures` | failed tests with trimmed (or full) stack traces, signatures, and the end of their stdout/stderr |
+| `junit_compare` | two runs: newly failing, fixed, still failing, added, removed, slower |
+| `maven_reactor` | modules, coordinates, inter-module dependencies and build order from the poms; `-pl/-am/-amd` selections; the modules a set of changed files affects and the `-pl` to build them |
+| `maven_run` | runs `mvnw`/`mvn` (batch, no transfer progress, timestamps and builder threads on each line) and returns module status and time, compiler errors with file:line:column, failed tests, goal failures and the `-rf` resume argument; the full log goes to a file |
+| `maven_log` | the same analysis for an existing log or pasted output |
+| `log_query` | records, counts, groups (by level, logger, thread or message template), error groups by stack trace signature, or a histogram, with level/thread/logger/message/time filters; multi-line records and stack traces stay together; plain or `.gz` files |
+| `log_pattern` | the presets, the regex a layout compiles to, and how the first records of a file parse |
+| `stacktrace_parse` | exception, cause chain, root cause, first application frame, signature and a trimmed trace |
+| `table_render` | rows or CSV as ascii, markdown, jira, slack (code block), csv, tsv or html |
+| `timeline` | what each thread did over time, from a recording, logs, a `maven_run` log or given events: busy time per thread, most threads busy at once, the same block running on several threads together, lock waits; drawn as ascii, mermaid, plantuml, chrome (Perfetto) or html |
+
+Log formats are a preset (`wildfly`, `wildfly-console`, `logback`, `logback-full`, `log4j2`,
+`spring-boot`, `maven`, `iso`), `auto`, a layout pattern as configured in the logging framework
+(`%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n`), or `regex:` with the named groups `ts`,
+`level`, `thread`, `logger` and `message`. Lines that do not start a record belong to the one
+before (stack traces, multi-line messages).
+
+Timeline spans from logs are rules pairing a start and an end message, on the same thread or
+across threads through a named group:
+
+```json
+{ "source": "log", "files": ["server.log"],
+  "spans": [ { "name": "request", "start": "begin request (?<id>\\w+)", "end": "end request (?<id>\\w+)", "key": "id" },
+             { "name": "query", "start": "query start", "end": "query end" } ],
+  "markers": [ { "name": "error", "match": "Exception" } ] }
+```
+
+From a recording made with `locks=true`, a thread waiting for a monitor another thread holds
+shows as `~` next to the holder's `=`:
+
+```
+worker-a AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  .1     EEEEEEEEEEEEEEE============================
+  .2     BBBBBBBBBBBBBBBDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+  .3                    BBBBBBBBBBBBBBBBBBBBBBBBBBBB
+worker-b AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  .1     EEEEEEEEEEEEEEE~~~~~~~~~~~~~~~~~~~~~~~~~~~~=============================
+```
+
+The agent records a lock before acquiring it, so a wait lasts until the thread's next event: it
+is an upper bound. `maven_reactor` evaluates only the profiles it is given and `activeByDefault`
+ones; `exact: true` asks `mvn validate` instead. `maven_run` executes the project's build:
+plugins and tests run with the server's permissions.
 
 ## WildFly / JBoss EAP
 

@@ -41,7 +41,15 @@ class McpServerIT {
 
             List<String> names = client.listTools().tools().stream().map(McpSchema.Tool::name).toList();
             assertTrue(names.containsAll(List.of("load_model", "call_paths", "check_guard", "run_detectors",
-                    "attach_agent", "recorder")), names.toString());
+                    "attach_agent", "recorder", "table_render", "stacktrace_parse", "junit_summary", "junit_failures",
+                    "junit_compare", "log_query", "log_pattern", "maven_reactor", "maven_run", "maven_log", "timeline")),
+                    names.toString());
+            assertEquals(28, names.size(), names.toString());
+
+            // plain-text results (tables, diagrams) arrive unquoted
+            McpSchema.CallToolResult table = client.callTool(McpSchema.CallToolRequest.builder("table_render")
+                    .arguments(Map.of("format", "jira", "columns", List.of("a"), "rows", List.of(List.of("x")))).build());
+            assertEquals("||a||\n|x|\n", text(table));
 
             Map<String, Object> loaded = call(client, json, "load_model", Map.of("app", List.of(app.toString())));
             assertEquals("m1", loaded.get("model_id"));

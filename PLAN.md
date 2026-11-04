@@ -6,13 +6,18 @@ runtime traces with static analysis of the bytecode to find bugs.
 ## Status
 
 All phases are implemented on the `v2` branch, one commit per phase, plus an MCP server
-(`javacg-mcp`) over the analysis and live recording control. Not yet done:
+(`javacg-mcp`) over the analysis and live recording control, and developer tools
+(`javacg-devtools`: JUnit reports, Maven reactor/runs/logs, log queries, tables, thread
+timelines). Not yet done:
 
 * No automated test against a live WildFly/Arquillian setup; the integration tests use
   plain forked JVMs.
 * The Maven plugin is verified by hand on a sample project, not by `maven-invoker-plugin`.
 * The static detectors are intraprocedural (except lock order); interprocedural null and
   resource tracking would need method summaries.
+* `maven_reactor` does not evaluate profile activation by JDK, OS, property or file (only
+  named and `activeByDefault` profiles); `exact: true` delegates to Maven.
+* Log queries re-read the files on each call; JSON log lines (ECS, logstash) have no preset.
 * `guard` queries cannot express "check() is called before act() in the same method";
   that needs an ordering analysis inside method bodies.
 
