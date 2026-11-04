@@ -1,7 +1,8 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,7 +58,7 @@ class GitToolsIT {
                     + "\n    }\n}\n");
             commits.add(repo.commit(body));
         }
-        ServerTools tools = new ServerTools();
+        ToolHarness tools = new ToolHarness();
         Map<String, Object> started = ok(tools, "bisect_run", "project_dir", repo.dir.toString(), "good", commits.get(0),
                 "args", List.of("test"), "offline", true, "fails_test", "CalcTest#four", "step_timeout_seconds", 300,
                 "table_format", "ascii");

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.acme.OrderTest" time="5.1" tests="4">
+  <testcase name="total" classname="com.acme.OrderTest" time="0.010"/>
+  <testcase name="save" classname="com.acme.OrderTest" time="2.8">
+    <error message="save failed" type="java.lang.IllegalStateException"><![CDATA[java.lang.IllegalStateException: save failed
+	at com.acme.OrderService.save(OrderService.java:90)
+	at com.acme.OrderTest.save(OrderTest.java:50)
+Caused by: java.lang.NullPointerException
+	at com.acme.Keys.next(Keys.java:9)
+	... 2 more
+]]></error>
+  </testcase>
+  <testcase name="fast" classname="com.acme.OrderTest" time="2.0">
+    <failure message="expected: &lt;1&gt; but was: &lt;3&gt;" type="org.opentest4j.AssertionFailedError"/>
+  </testcase>
+  <testcase name="brandNew" classname="com.acme.OrderTest" time="0.2"/>
+</testsuite>

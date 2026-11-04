@@ -32,6 +32,10 @@
     <module>mcp-set-tools-cli</module>
     <module>mcp-set-tools-maven-plugin</module>
     <module>mcp-set-tools-devtools</module>
+    <module>mcp-set-tools-tool-format</module>
+    <module>mcp-set-tools-tool-timeline</module>
+    <module>mcp-set-tools-tool-logs</module>
+    <module>mcp-set-tools-tool-build</module>
     <module>mcp-set-tools-mcp</module>
   </modules>
 
@@ -97,6 +101,26 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>mcp-set-tools-connectors</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-format</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-timeline</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-logs</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-build</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

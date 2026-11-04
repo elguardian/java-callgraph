@@ -12,4 +12,16 @@
   <artifactId>mcp-set-tools-testkit</artifactId>
   <name>mcp-set-tools-testkit</name>
   <description>Test helpers: in-memory compilation of fixtures and forked JVM runs</description>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-tool-api</artifactId>
+    </dependency>
+    <dependency>
+      <!-- ToolHarness asserts; the testkit is only ever a test dependency -->
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
 </project>

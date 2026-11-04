@@ -15,3 +15,6 @@ bin/
 .idea/
 *.iml
 
+
+# test fixtures that imitate build output (e.g. surefire reports)
+!**/src/test/resources/**/target/

@@ -14,12 +14,7 @@ final class ServerTools {
     private final ToolRegistry registry;
 
     ServerTools() {
-        this(new Models());
-    }
-
-    ServerTools(Models models) {
-        registry = ToolRegistry.load(ServerTools.class.getClassLoader(), ToolContext.standard(), Set.of(),
-                List.of(new BundledTools(models)));
+        registry = ToolRegistry.load(ServerTools.class.getClassLoader(), ToolContext.standard(), Set.of(), List.of());
     }
 
     ToolRegistry registry() {

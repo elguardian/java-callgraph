@@ -15,8 +15,8 @@ import java.util.Map;
 import io.github.elguardian.mcpsettools.devtools.git.Bisect;
 import io.github.elguardian.mcpsettools.devtools.git.Git;
 import io.github.elguardian.mcpsettools.devtools.git.SourceMapper;
-import io.github.elguardian.mcpsettools.devtools.maven.MavenBuild;
-import io.github.elguardian.mcpsettools.devtools.maven.MavenRunner;
+import io.github.elguardian.mcpsettools.build.maven.MavenBuild;
+import io.github.elguardian.mcpsettools.build.maven.MavenRunner;
 import io.github.elguardian.mcpsettools.commons.stack.StackTrace;
 import io.github.elguardian.mcpsettools.commons.stack.StackTraceParser;
 

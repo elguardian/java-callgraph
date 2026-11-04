@@ -1,6 +1,3 @@
 io.github.elguardian.mcpsettools.mcp.RecordingTimelineSource
-io.github.elguardian.mcpsettools.mcp.LogTimelineSource
-io.github.elguardian.mcpsettools.mcp.MavenTimelineSource
 io.github.elguardian.mcpsettools.mcp.GcTimelineSource
 io.github.elguardian.mcpsettools.mcp.JfrTimelineSource
-io.github.elguardian.mcpsettools.mcp.EventsTimelineSource

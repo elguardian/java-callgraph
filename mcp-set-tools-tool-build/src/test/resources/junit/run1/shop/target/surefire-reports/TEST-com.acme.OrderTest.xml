@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.acme.OrderTest" time="3.5" tests="5" errors="1" skipped="1" failures="1">
+  <properties>
+    <property name="java.version" value="21"/>
+  </properties>
+  <testcase name="total" classname="com.acme.OrderTest" time="0.012">
+    <failure message="expected: &lt;10&gt; but was: &lt;12&gt;" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <10> but was: <12>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at com.acme.OrderTest.total(OrderTest.java:42)
+]]></failure>
+    <system-out><![CDATA[computing total for order 17
+]]></system-out>
+  </testcase>
+  <testcase name="save" classname="com.acme.OrderTest" time="2.9">
+    <error message="save failed" type="java.lang.IllegalStateException"><![CDATA[java.lang.IllegalStateException: save failed
+	at com.acme.OrderService.save(OrderService.java:88)
+	at com.acme.OrderTest.save(OrderTest.java:50)
+Caused by: java.lang.NullPointerException
+	at com.acme.Keys.next(Keys.java:9)
+	... 2 more
+]]></error>
+  </testcase>
+  <testcase name="later" classname="com.acme.OrderTest" time="0">
+    <skipped message="not yet"/>
+  </testcase>
+  <testcase name="retry" classname="com.acme.OrderTest" time="0.5">
+    <flakyFailure message="timeout" type="java.util.concurrent.TimeoutException">
+      <stackTrace><![CDATA[java.util.concurrent.TimeoutException: timeout
+	at com.acme.Client.call(Client.java:5)
+]]></stackTrace>
+      <system-out>first attempt</system-out>
+    </flakyFailure>
+  </testcase>
+  <testcase name="fast" classname="com.acme.OrderTest" time="0.001"/>
+</testsuite>

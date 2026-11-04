@@ -1,8 +1,9 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.error;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.error;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -42,7 +43,7 @@ class GitToolsTest {
         repo.write("src/main/java/org/acme/Svc.java", SVC.replace("public class Svc {", "public class Svc {\n    // a\n    // b"))
                 .commit("1.1");
         repo.tag("1.1");
-        ServerTools tools = new ServerTools();
+        ToolHarness tools = new ToolHarness();
         Map<String, Object> one = ok(tools, "stacktrace_map", "text", TRACE, "repo", repo.dir.toString(), "ref", "1.0");
         assertEquals("Every frame found in the repository fits 1.0", one.get("verdict"));
         Map<String, Object> f = map(((List<?>) one.get("frames")).get(0));
@@ -63,7 +64,7 @@ class GitToolsTest {
         repo.write("f.txt", "ok 2\n").commit("2");
         String broken = repo.write("f.txt", "BROKEN\n").commit("3");
         repo.write("f.txt", "BROKEN 4\n").commit("4");
-        ServerTools tools = new ServerTools();
+        ToolHarness tools = new ToolHarness();
         String job = (String) ok(tools, "bisect_run", "project_dir", repo.dir.toString(), "good", first, "oracle", "command",
                 "command", List.of("sh", "-c", "! grep -q BROKEN f.txt")).get("job_id");
         Map<String, Object> status = ok(tools, "job_status", "job_id", job, "wait_seconds", 60);

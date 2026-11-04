@@ -1,10 +1,11 @@
 package io.github.elguardian.mcpsettools.mcp;
 
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
 import io.github.elguardian.mcpsettools.tool.Tool;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.error;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.items;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.error;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.items;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,12 +23,12 @@ class AnalysisToolsTest {
     @TempDir
     Path tmp;
 
-    ServerTools tools;
+    ToolHarness tools;
     Path app;
 
     @BeforeEach
     void load() throws Exception {
-        tools = new ServerTools();
+        tools = new ToolHarness();
         app = Fixture.appJar(tmp);
         Map<String, Object> m = ok(tools, "load_model", "app", List.of(app.toString()));
         assertEquals("m1", m.get("model_id"));
@@ -121,7 +122,7 @@ class AnalysisToolsTest {
 
     @Test
     void loadErrors() {
-        ServerTools fresh = new ServerTools();
+        ToolHarness fresh = new ToolHarness();
         assertTrue(error(fresh, "load_model").contains("Give 'app' inputs"));
         assertTrue(error(fresh, "load_model", "app", tmp.resolve("missing.jar").toString())
                 .startsWith("Input does not exist"));

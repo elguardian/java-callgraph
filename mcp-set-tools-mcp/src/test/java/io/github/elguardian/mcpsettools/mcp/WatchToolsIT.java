@@ -1,8 +1,9 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.error;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.error;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -62,7 +63,7 @@ class WatchToolsIT {
         Path app = TestCompiler.create().source("l.Loop", APP).compile().writeJar(tmp.resolve("loop.jar"));
         Process p = start(app);
         try {
-            ServerTools tools = new ServerTools();
+            ToolHarness tools = new ToolHarness();
             String pid = Long.toString(p.pid());
             Map<String, Object> m = ok(tools, "watch_method", "pid", pid, "method", "l.Work.tick", "seconds", 2, "samples", 3);
             assertTrue((Long) m.get("calls") > 50, m.toString());
@@ -95,7 +96,7 @@ class WatchToolsIT {
         String agent = System.getProperty("mcpsettools.agent.jar");
         Process p = start(app, "-javaagent:" + agent + "=incl=l\\..*;record=manual;jmx=0;out=" + tmp.resolve("rec"));
         try {
-            ServerTools tools = new ServerTools();
+            ToolHarness tools = new ToolHarness();
             Map<String, Object> started = ok(tools, "watch_method", "pid", Long.toString(p.pid()), "method", "l.Work.tick(int,java.lang.String)",
                     "seconds", 1, "background", true, "only_exceptions", true);
             Map<String, Object> status = ok(tools, "job_status", "job_id", started.get("job_id"), "wait_seconds", 30);

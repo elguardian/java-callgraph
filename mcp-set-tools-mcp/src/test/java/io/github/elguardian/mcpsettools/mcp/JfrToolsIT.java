@@ -1,8 +1,9 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.error;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.error;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,7 +42,7 @@ class JfrToolsIT {
         try {
             BufferedReader out = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8));
             assertEquals("ready", out.readLine());
-            ServerTools tools = new ServerTools();
+            ToolHarness tools = new ToolHarness();
             String pid = Long.toString(p.pid());
             Map<String, Object> m = ok(tools, "jfr_analyze", "pid", pid, "seconds", 2, "sections", List.of("cpu"),
                     "app_packages", List.of("h"));

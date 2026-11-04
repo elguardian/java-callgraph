@@ -1,6 +1,7 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -48,7 +49,7 @@ class GcToolsIT {
         try {
             BufferedReader out = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8));
             assertEquals("ready", out.readLine());
-            ServerTools tools = new ServerTools();
+            ToolHarness tools = new ToolHarness();
             Map<String, Object> m = ok(tools, "heap_histogram", "pid", Long.toString(p.pid()), "count", 3, "interval_seconds", 1);
             assertEquals(3, m.get("snapshots"));
             List<?> leaks = (List<?>) m.get("leak_candidates");

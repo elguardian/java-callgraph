@@ -1,10 +1,11 @@
 package io.github.elguardian.mcpsettools.mcp;
 
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
 import io.github.elguardian.mcpsettools.tool.ToolRegistry;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.error;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.items;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.error;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.items;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -56,7 +57,7 @@ class LiveToolsIT {
                     StandardCharsets.UTF_8));
             assertEquals("ready", out.readLine());
             String pid = Long.toString(target.pid());
-            ServerTools tools = new ServerTools();
+            ToolHarness tools = new ToolHarness();
 
             List<?> jvms = (List<?>) ok(tools, "list_jvms", "match", "l.Loop").get("jvms");
             assertEquals(1, jvms.size(), jvms.toString());
@@ -106,10 +107,10 @@ class LiveToolsIT {
     }
 
     /** The agent registers its MBean from a background thread right after loading. */
-    private static Map<String, Object> awaitRecorder(ServerTools tools, String pid) throws InterruptedException {
+    private static Map<String, Object> awaitRecorder(ToolHarness tools, String pid) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
         while (true) {
-            ToolRegistry.Result r = tools.call("recorder", Fixture.args("pid", pid, "action", "status"));
+            ToolRegistry.Result r = tools.call("recorder", ToolHarness.args("pid", pid, "action", "status"));
             if (!r.isError()) {
                 return map(r.value());
             }

@@ -1,7 +1,8 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -47,7 +48,7 @@ class ThreadToolsIT {
         try {
             BufferedReader out = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8));
             assertEquals("ready", out.readLine());
-            Map<String, Object> m = ok(new ServerTools(), "thread_dump_analyze", "pid", Long.toString(p.pid()), "count", 2,
+            Map<String, Object> m = ok(new ToolHarness(), "thread_dump_analyze", "pid", Long.toString(p.pid()), "count", 2,
                     "interval_seconds", 1);
             assertEquals(2, m.get("dumps"));
             assertTrue(Files.isRegularFile(Path.of((String) m.get("dump_file"))));

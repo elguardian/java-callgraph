@@ -1,8 +1,9 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.error;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.error;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -166,7 +167,7 @@ class StatusToolsTest {
 
     @Test
     void prioritizesAcrossSources() throws Exception {
-        ServerTools tools = new ServerTools();
+        ToolHarness tools = new ToolHarness();
         Map<String, Object> m = ok(tools, "daily_status", "config", config.toString(), "table_format", "markdown");
         Map<String, Object> sources = map(m.get("sources"));
         assertEquals("ok, 2 item(s)", sources.get("jira jira"), sources.toString());
@@ -208,7 +209,7 @@ class StatusToolsTest {
 
     @Test
     void marksOnlyChangesAsNew() throws Exception {
-        ServerTools tools = new ServerTools();
+        ToolHarness tools = new ToolHarness();
         ok(tools, "daily_status", "config", config.toString(), "sources", List.of("jira"));
         Map<String, Object> again = ok(tools, "daily_status", "config", config.toString(), "sources", List.of("jira"));
         assertTrue(((List<?>) again.get("in_progress")).stream().noneMatch(x -> map(x).containsKey("new")));
@@ -225,7 +226,7 @@ class StatusToolsTest {
     void notConfigured() {
         // no file and (in the build environment) no GITLAB_TOKEN
         org.junit.jupiter.api.Assumptions.assumeTrue(System.getenv("GITLAB_TOKEN") == null);
-        assertTrue(error(new ServerTools(), "daily_status", "config", tmp.resolve("none.json").toString(), "sources",
+        assertTrue(error(new ToolHarness(), "daily_status", "config", tmp.resolve("none.json").toString(), "sources",
                 List.of("gitlab")).startsWith("Nothing configured"));
     }
 }

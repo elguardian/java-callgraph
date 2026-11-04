@@ -1,7 +1,8 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import static io.github.elguardian.mcpsettools.mcp.Fixture.map;
-import static io.github.elguardian.mcpsettools.mcp.Fixture.ok;
+import io.github.elguardian.mcpsettools.testkit.ToolHarness;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.map;
+import static io.github.elguardian.mcpsettools.testkit.ToolHarness.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -51,7 +52,7 @@ class TimelineToolsIT {
         Path out = tmp.resolve("rec");
         ForkedJvm.create().classpath(app).jvmArg("-javaagent:" + agent + "=incl=c\\..*;locks=true;jmx=off;out=" + out)
                 .mainClass("c.Main").run().assertSuccess();
-        ServerTools tools = new ServerTools();
+        ToolHarness tools = new ToolHarness();
 
         Map<String, Object> m = ok(tools, "timeline", "source", "recording", "trace", List.of(out.toString()), "methods",
                 "c.Main.*", "width", 60);
@@ -66,7 +67,7 @@ class TimelineToolsIT {
         assertTrue(((String) m.get("diagram")).contains("~"), (String) m.get("diagram"));
 
         for (String format : List.of("mermaid", "plantuml")) {
-            assertTrue(Fixture.text(tools, "timeline", "source", "recording", "trace", List.of(out.toString()), "methods",
+            assertTrue(ToolHarness.text(tools, "timeline", "source", "recording", "trace", List.of(out.toString()), "methods",
                     "c.Main.*", "format", format, "diagram_only", true).length() > 50);
         }
         Path chrome = tmp.resolve("trace.json");

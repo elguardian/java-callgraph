@@ -24,6 +24,22 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-tool-build</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-tool-logs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-tool-timeline</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>mcp-set-tools-tool-format</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>mcp-set-tools-timeline</artifactId>
     </dependency>
     <dependency>
