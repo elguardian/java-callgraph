@@ -8,7 +8,8 @@ runtime traces with static analysis of the bytecode to find bugs.
 All phases are implemented on the `v2` branch, one commit per phase, plus an MCP server
 (`javacg-mcp`) over the analysis and live recording control, and developer tools
 (`javacg-devtools`: JUnit reports, Maven reactor/runs/logs, log queries, tables, thread
-timelines). Not yet done:
+timelines), and sustaining tools (thread dumps, GC logs, heap histograms, JFR, method watches,
+stack trace to version mapping, known issues with Jira search, bisect). Not yet done:
 
 * No automated test against a live WildFly/Arquillian setup; the integration tests use
   plain forked JVMs.
@@ -17,6 +18,12 @@ timelines). Not yet done:
   resource tracking would need method summaries.
 * `maven_reactor` does not evaluate profile activation by JDK, OS, property or file (only
   named and `activeByDefault` profiles); `exact: true` delegates to Maven.
+* Thread dumps: virtual threads (`jcmd Thread.dump_to_file`) are not parsed; only platform
+  threads of `Thread.print`.
+* `stacktrace_map` finds the enclosing method with a source heuristic (declarations above the
+  line), not by compiling; Kotlin and Scala sources are not checked.
+* `watch_method` samples hold argument references until the call ends: values are rendered at
+  exit, so arguments mutated by the method show their final state.
 * Log queries re-read the files on each call; JSON log lines (ECS, logstash) have no preset.
 * `guard` queries cannot express "check() is called before act() in the same method";
   that needs an ordering analysis inside method bodies.

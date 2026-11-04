@@ -43,6 +43,12 @@ public final class McpMain {
             pattern first. stacktrace_parse explains a pasted stack trace.
             Concurrency: timeline draws what threads did over time from a recording, logs, a maven_run \
             log or given events, with overlap and lock-wait analysis.
+            Sustaining: thread_dump_analyze (deadlocks, lock owners, stuck and hot threads), gc_log_analyze \
+            and heap_histogram (pauses, leaks), jfr_analyze (CPU, locks, allocation, I/O from a recording or \
+            a live pid), watch_method (calls, latency and values of one method in a running JVM), \
+            stacktrace_map (which version produced a trace, with source lines), known_issue_match (known \
+            issues and Jira), bisect_run (the commit that broke a test). Long tools return a job_id: poll \
+            job_status.
             Output: tools returning lists take table_format (ascii, markdown, jira, slack, csv, tsv, \
             html); table_render formats any rows for pasting into Jira, Slack or a terminal.""";
 

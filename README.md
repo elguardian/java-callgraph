@@ -400,6 +400,55 @@ is an upper bound. `maven_reactor` evaluates only the profiles it is given and `
 ones; `exact: true` asks `mvn validate` instead. `maven_run` executes the project's build:
 plugins and tests run with the server's permissions.
 
+### Sustaining tools
+
+For escalations and regressions: reading what a customer sends, tying a failure to a version
+and a known issue, finding the commit that broke something, and probing a live JVM.
+
+| Tool | |
+|------|-|
+| `thread_dump_analyze` | jstack / `jcmd Thread.print` / `kill -3` dumps (JDK 8 to 25, several per file, inside logs), or taken from a pid: deadlocks over monitors and `java.util.concurrent` locks, each contended lock with its owner and what the owner is doing, threads grouped by state and top frames, pools, threads stuck across dumps, CPU used between dumps |
+| `gc_log_analyze` | unified (`-Xlog:gc*`) and JDK 8 GC logs: pause percentiles per kind, paused share overall and in the worst window, allocation rate, heap after full GC over time with a leak flag, full GC causes, to-space exhaustion and allocation stalls |
+| `heap_histogram` | `jcmd GC.class_histogram` / `jmap -histo` snapshots, from files or a pid: growth per class and classes growing in every snapshot |
+| `jfr_analyze` | a JFR file, or a pid recorded through `jcmd JFR.start`: hot methods and stacks, monitor contention and parking, allocation by class and site, socket and file I/O, exceptions, GC, CPU load |
+| `watch_method` | instruments one method of a running JVM for a while (loading the agent if needed) and reports calls, failures, p50/p90/p99, exceptions, and the first and slowest calls with arguments and results; the original bytecode is restored afterwards |
+| `stacktrace_map` | maps each frame of a trace to the source at a git ref with the surrounding lines, checks that the line is in the method the frame names, and ranks versions or tags by how many frames fit |
+| `known_issue_match` | matches traces (pasted, the error groups of a log, JUnit failures) against a known-issue store and a live Jira search; `known_issue_add` and `known_issue_import` (Jira CSV export) fill the store |
+| `bisect_run` | `git bisect` in a temporary worktree with a Maven oracle (a test that fails, a log pattern, the build) or any command; runs as a background job |
+| `job_status`, `job_list`, `job_cancel` | background jobs (`bisect_run`, and `watch_method` / `jfr_analyze` with `background`) |
+
+Live-JVM tools (`pid`) use the `jcmd` of the JDK the server runs on and need the same user as
+the target. `heap_histogram` by pid counts live objects, which forces a full GC in the target
+(`all_objects` avoids it). `watch_method` shows values with `toString()`, which runs the
+target's own code; `capture: types` avoids that. JDK and javacg classes cannot be watched.
+
+A trace from a customer, checked against releases:
+
+```json
+{ "text": "java.lang.IllegalStateException: ...\n\tat org.acme.Svc.save(Svc.java:88)\n...",
+  "repo": ".", "tag_pattern": "7.4.*" }
+```
+
+returns each tag with the number of frames whose line falls in the named method, the best one,
+and the source around every frame at that tag.
+
+Known issues live in a JSON-lines file (`$JAVACG_ISSUES`, default `~/.javacg/known-issues.jsonl`)
+that a team can keep in a repository. With `JIRA_URL` and `JIRA_TOKEN` (plus `JIRA_USER` for
+Jira Cloud) in the server's environment, `known_issue_match` also searches Jira for the root
+exception and the first application frame, and scores the hits by the stack traces in their
+description and comments. The token is read from the environment only.
+
+`bisect_run` with a Maven oracle:
+
+```json
+{ "project_dir": ".", "good": "7.4.10", "bad": "HEAD", "args": ["-pl", "core", "-am", "test",
+  "-Dtest=OrderTest", "-Dsurefire.failIfNoSpecifiedTests=false"], "fails_test": "OrderTest#total" }
+```
+
+Commits that do not compile, or whose build fails before the tests run, are skipped. Use `test`
+or `verify`, not `install`, so the bisect builds do not replace artifacts in the local Maven
+repository.
+
 ## WildFly / JBoss EAP
 
 WildFly loads subsystems and deployments through JBoss Modules, whose class loaders only see
