@@ -1,5 +1,6 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.ToolRegistry;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -63,20 +64,20 @@ final class Fixture {
 
     @SuppressWarnings("unchecked")
     static Map<String, Object> ok(JavacgTools tools, String tool, Object... keyValues) {
-        JavacgTools.Result r = tools.call(tool, args(keyValues));
+        ToolRegistry.Result r = tools.call(tool, args(keyValues));
         assertFalse(r.isError(), () -> tool + ": " + r.error());
         return (Map<String, Object>) r.value();
     }
 
     /** A tool whose result is plain text (tables, diagrams). */
     static String text(JavacgTools tools, String tool, Object... keyValues) {
-        JavacgTools.Result r = tools.call(tool, args(keyValues));
+        ToolRegistry.Result r = tools.call(tool, args(keyValues));
         assertFalse(r.isError(), () -> tool + ": " + r.error());
         return (String) r.value();
     }
 
     static String error(JavacgTools tools, String tool, Object... keyValues) {
-        JavacgTools.Result r = tools.call(tool, args(keyValues));
+        ToolRegistry.Result r = tools.call(tool, args(keyValues));
         assertTrue(r.isError(), () -> tool + " should fail, returned " + r.value());
         return r.error();
     }

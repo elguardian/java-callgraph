@@ -10,7 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
 
 class KnownIssueTest {
 

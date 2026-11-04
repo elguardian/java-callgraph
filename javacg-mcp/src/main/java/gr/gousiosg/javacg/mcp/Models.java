@@ -1,5 +1,7 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;

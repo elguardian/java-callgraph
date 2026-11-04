@@ -1,5 +1,6 @@
 package gr.gousiosg.javacg.core.io;
 
+import gr.gousiosg.javacg.commons.json.JsonWriter;
 import java.io.Writer;
 
 import gr.gousiosg.javacg.core.CallGraph;

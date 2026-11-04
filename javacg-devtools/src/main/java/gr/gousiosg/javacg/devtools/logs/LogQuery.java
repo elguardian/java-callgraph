@@ -1,5 +1,6 @@
 package gr.gousiosg.javacg.devtools.logs;
 
+import gr.gousiosg.javacg.commons.text.Templates;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -20,8 +21,8 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
 
 /** One pass over log files: filtering, records with context, counts, groups, error groups, histogram. */
 public final class LogQuery {

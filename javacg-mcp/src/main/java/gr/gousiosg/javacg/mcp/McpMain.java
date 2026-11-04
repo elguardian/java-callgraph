@@ -1,5 +1,7 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.ToolRegistry;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -114,13 +116,13 @@ public final class McpMain {
         }
     }
 
-    private static SyncToolSpecification specification(ToolDef t, JavacgTools tools, McpJsonMapper json) {
+    private static SyncToolSpecification specification(Tool t, JavacgTools tools, McpJsonMapper json) {
         McpSchema.Tool tool = McpSchema.Tool.builder(t.name(), t.inputSchema()).title(t.title()).description(t.description())
                 .annotations(McpSchema.ToolAnnotations.builder().title(t.title()).readOnlyHint(t.readOnly())
                         .destructiveHint(false).openWorldHint(false).build())
                 .build();
         return SyncToolSpecification.builder().tool(tool).callHandler((exchange, request) -> {
-            JavacgTools.Result r = tools.call(t.name(), request.arguments());
+            ToolRegistry.Result r = tools.call(t.name(), request.arguments());
             if (r.isError()) {
                 return McpSchema.CallToolResult.builder().addTextContent(r.error()).isError(true).build();
             }

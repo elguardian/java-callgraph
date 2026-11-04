@@ -1,25 +1,29 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
-import gr.gousiosg.javacg.devtools.table.Table;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
+import gr.gousiosg.javacg.commons.table.Table;
 
 /** Formatting tools: tables for chat/Jira/Slack, stack trace parsing. */
 final class TableTools {
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(tableRender(), stacktraceParse());
     }
 
-    private ToolDef tableRender() {
-        return new ToolDef("table_render", "Render a table", """
+    private Tool tableRender() {
+        return new Tool("table_render", "Render a table", """
                 Renders rows as a table to paste somewhere: ascii (terminal, plain text), markdown (GitHub, \
                 GitLab), jira (Jira/Confluence wiki markup), slack (a code block, since Slack has no \
                 tables), csv, tsv or html. Give columns + rows (arrays of cells, or objects keyed by \
@@ -94,8 +98,8 @@ final class TableTools {
         }
     }
 
-    private ToolDef stacktraceParse() {
-        return new ToolDef("stacktrace_parse", "Parse a stack trace", """
+    private Tool stacktraceParse() {
+        return new Tool("stacktrace_parse", "Parse a stack trace", """
                 Parses Java stack trace text (printStackTrace output, a log excerpt, a test failure) into \
                 its exception, message, cause chain and root cause, the first application frame, a \
                 signature to tell whether two failures are the same (exception types + application \

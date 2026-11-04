@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
 
 /**
  * Maps the frames of a stack trace to the sources of a git ref and checks that they fit: the

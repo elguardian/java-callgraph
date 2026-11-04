@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -19,9 +24,9 @@ import gr.gousiosg.javacg.devtools.junit.TestRun;
 import gr.gousiosg.javacg.devtools.logs.LogFormat;
 import gr.gousiosg.javacg.devtools.logs.LogQuery;
 import gr.gousiosg.javacg.devtools.logs.LogReader;
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
 
 /** Known issues: match traces against a local store and Jira, record new ones, import a Jira export. */
 final class IssueTools {
@@ -30,12 +35,12 @@ final class IssueTools {
     private record Input(String from, StackTrace trace) {
     }
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(match(), add(), importCsv());
     }
 
-    private ToolDef match() {
-        return new ToolDef("known_issue_match", "Find known issues", """
+    private Tool match() {
+        return new Tool("known_issue_match", "Find known issues", """
                 Finds known issues behind stack traces: a pasted trace, the error groups of a log file, or the \
                 failures of JUnit reports. Each trace is compared with a local store of known issues (a JSON-lines \
                 file, shareable in a team repository) and, when JIRA_URL and JIRA_TOKEN are set in the server's \
@@ -223,8 +228,8 @@ final class IssueTools {
         return unique;
     }
 
-    private ToolDef add() {
-        return new ToolDef("known_issue_add", "Record a known issue", """
+    private Tool add() {
+        return new Tool("known_issue_add", "Record a known issue", """
                 Adds a known issue to the store with the stack trace that identifies it (its signature, root \
                 exception and application frames are computed from the trace), so later traces of the same \
                 problem match it. Re-adding the same key and trace replaces the entry.""", false,
@@ -256,8 +261,8 @@ final class IssueTools {
                 });
     }
 
-    private ToolDef importCsv() {
-        return new ToolDef("known_issue_import", "Import known issues from Jira CSV", """
+    private Tool importCsv() {
+        return new Tool("known_issue_import", "Import known issues from Jira CSV", """
                 Imports a Jira CSV export (Issues > Export > CSV, all fields or at least Issue key, Summary, Status, \
                 Fix Version/s, Description and Comment) into the known-issue store: one entry per distinct stack \
                 trace found in each issue's description and comments.""", false,

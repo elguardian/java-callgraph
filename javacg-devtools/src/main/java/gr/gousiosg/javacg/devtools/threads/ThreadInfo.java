@@ -2,7 +2,7 @@ package gr.gousiosg.javacg.devtools.threads;
 
 import java.util.List;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
 
 /**
  * One thread of a dump.

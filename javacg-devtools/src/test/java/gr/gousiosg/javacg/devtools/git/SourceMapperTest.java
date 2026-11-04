@@ -12,8 +12,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
 
 class SourceMapperTest {
 

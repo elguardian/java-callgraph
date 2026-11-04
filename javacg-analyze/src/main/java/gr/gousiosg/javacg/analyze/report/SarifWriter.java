@@ -16,7 +16,7 @@ import java.util.Properties;
 import gr.gousiosg.javacg.analyze.Model;
 import gr.gousiosg.javacg.analyze.detect.Finding;
 import gr.gousiosg.javacg.core.MethodId;
-import gr.gousiosg.javacg.core.io.JsonWriter;
+import gr.gousiosg.javacg.commons.json.JsonWriter;
 import gr.gousiosg.javacg.stat.ClassInfo;
 
 /**

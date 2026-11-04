@@ -1,5 +1,11 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
+import gr.gousiosg.javacg.tool.Jobs;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -11,8 +17,8 @@ import gr.gousiosg.javacg.devtools.git.Git;
 import gr.gousiosg.javacg.devtools.git.SourceMapper;
 import gr.gousiosg.javacg.devtools.maven.MavenBuild;
 import gr.gousiosg.javacg.devtools.maven.MavenRunner;
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
 
 /** Tools on a git repository: mapping stack traces to versions, bisecting regressions. */
 final class GitTools {
@@ -23,12 +29,12 @@ final class GitTools {
         this.jobs = jobs;
     }
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(stacktraceMap(), bisect());
     }
 
-    private ToolDef bisect() {
-        return new ToolDef("bisect_run", "Find the commit that broke something", """
+    private Tool bisect() {
+        return new Tool("bisect_run", "Find the commit that broke something", """
                 Runs git bisect between a good and a bad commit and returns the first bad commit (subject, \
                 author, files) and every step. Each commit is judged in a temporary worktree, so the user's \
                 checkout is untouched. Oracles: maven (runs mvn with 'args'; bad when 'fails_test' fails, when the \
@@ -167,18 +173,18 @@ final class GitTools {
             Map<String, Object> r = new LinkedHashMap<>();
             r.put("commit", s.commit().substring(0, 10));
             r.put("subject", s.subject());
-            r.put("verdict", Views.lower(s.verdict()));
+            r.put("verdict", Results.lower(s.verdict()));
             r.put("seconds", s.seconds());
             r.put("reason", s.reason());
             return r;
         }).toList();
         m.put("steps", steps);
-        Views.table(m, steps, null, args);
+        Results.table(m, steps, null, args);
         return m;
     }
 
-    private ToolDef stacktraceMap() {
-        return new ToolDef("stacktrace_map", "Map a stack trace to source", """
+    private Tool stacktraceMap() {
+        return new Tool("stacktrace_map", "Map a stack trace to source", """
                 Maps the frames of a stack trace (from a customer log, a test failure) to the sources of a git \
                 repository at a given version and checks each one: the line exists, is code, and lies in the \
                 method the frame names. Shows each frame's file and surrounding lines at that version. Frames \
@@ -270,7 +276,7 @@ final class GitTools {
             }
             Map<String, Object> x = new LinkedHashMap<>();
             x.put("frame", f.frame().toString());
-            x.put("status", Views.lower(f.status()));
+            x.put("status", Results.lower(f.status()));
             x.put("path", f.path() + (f.frame().line() > 0 ? ":" + f.frame().line() : ""));
             if (f.enclosing() != null) {
                 x.put("in", f.enclosing());

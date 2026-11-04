@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,11 +39,11 @@ final class TimelineTools {
         RECORDING, LOG, MAVEN, GC, JFR, EVENTS
     }
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(timeline());
     }
 
-    private ToolDef timeline() {
+    private Tool timeline() {
         Map<String, Object> rule = Map.of("type", "object", "properties", Map.of(
                 "name", Map.of("type", "string"),
                 "start", Map.of("type", "string", "description", "Regex on the message opening the span"),
@@ -55,7 +60,7 @@ final class TimelineTools {
                 "end", Map.of("type", List.of("number", "string"), "description", "Milliseconds or ISO time"),
                 "category", Map.of("type", "string"), "process", Map.of("type", "string")),
                 "required", List.of("thread", "start", "end", "label"));
-        return new ToolDef("timeline", "Draw a thread timeline", """
+        return new Tool("timeline", "Draw a thread timeline", """
                 Draws what threads did over time and measures their concurrency, from: a javacg recording \
                 (one block per call of the methods matching 'methods', plus lock wait/hold blocks when the \
                 agent ran with locks=true; several recordings of a cluster share one clock), log files \
@@ -99,7 +104,7 @@ final class TimelineTools {
                     Renderers.Format format = args.choice("format", Renderers.Format.class, Renderers.Format.ASCII);
                     boolean file = format == Renderers.Format.CHROME || format == Renderers.Format.HTML;
                     if (file && !args.has("output")) {
-                        throw new ToolException(Views.lower(format) + " diagrams are written to a file: give 'output'");
+                        throw new ToolException(Results.lower(format) + " diagrams are written to a file: give 'output'");
                     }
                     int maxSpans = args.integer("max_spans", 0) > 0 ? args.integer("max_spans", 0) : file ? 200_000 : 2_000;
                     Timeline full = read(args, zone, Math.max(maxSpans, 200_000));

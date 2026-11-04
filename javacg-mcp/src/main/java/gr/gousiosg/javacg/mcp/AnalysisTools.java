@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,14 +59,14 @@ final class AnalysisTools {
         this.models = models;
     }
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(loadModel(), listModels(), unloadModel(), findMethods(), describeMethod(), callPaths(),
                 checkGuard(), reach("callers"), reach("callees"), gapReport(), hotspots(), runDetectors(),
                 listDetectors(), exportGraph());
     }
 
-    private ToolDef loadModel() {
-        return new ToolDef("load_model", "Load a program model", """
+    private Tool loadModel() {
+        return new Tool("load_model", "Load a program model", """
                 Builds a model of a Java program and keeps it in memory for the other tools: a static \
                 call graph from bytecode (app inputs), runtime call graphs and statistics from javacg agent \
                 recordings (trace inputs), or both merged, with every edge tagged static, runtime or \
@@ -91,14 +96,14 @@ final class AnalysisTools {
                 });
     }
 
-    private ToolDef listModels() {
-        return new ToolDef("list_models", "List loaded models", "Lists the models loaded in this server with "
+    private Tool listModels() {
+        return new Tool("list_models", "List loaded models", "Lists the models loaded in this server with "
                 + "their inputs and size.", true, Schema.object().build(),
                 args -> Map.of("models", models.all().stream().map(l -> summary(l, false)).toList()));
     }
 
-    private ToolDef unloadModel() {
-        return new ToolDef("unload_model", "Unload a model", "Frees the memory of a loaded model.", false,
+    private Tool unloadModel() {
+        return new Tool("unload_model", "Unload a model", "Frees the memory of a loaded model.", false,
                 Schema.object().string("model_id", "Model to unload", true).build(), args -> {
                     String id = args.require("model_id");
                     if (!models.remove(id)) {
@@ -108,8 +113,8 @@ final class AnalysisTools {
                 });
     }
 
-    private ToolDef findMethods() {
-        return new ToolDef("find_methods", "Find methods", """
+    private Tool findMethods() {
+        return new Tool("find_methods", "Find methods", """
                 Looks up the methods of a model matching a pattern, to get exact names for the other tools. \
                 Shows for each whether it is an application method, whether it was instrumented and \
                 executed at runtime, its runtime call count and its number of direct callers/callees.""" + " "
@@ -120,13 +125,13 @@ final class AnalysisTools {
                     Model model = models.get(args).model();
                     String pattern = args.require("pattern");
                     List<MethodId> found = Models.resolve(model, pattern).stream().sorted().toList();
-                    return Views.page(found.stream().map(id -> Views.method(model, id)).toList(),
+                    return Results.page(found.stream().map(id -> Views.method(model, id)).toList(),
                             args.integer("limit", 50));
                 });
     }
 
-    private ToolDef describeMethod() {
-        return new ToolDef("describe_method", "Describe a method", """
+    private Tool describeMethod() {
+        return new Tool("describe_method", "Describe a method", """
                 Everything known about one method: whether it is application code, instrumented and \
                 executed, runtime statistics (calls, total/self time, recursion depth, exceptions that left \
                 it, exceptions it caught) and its direct callers and callees with provenance, call kinds, \
@@ -156,10 +161,10 @@ final class AnalysisTools {
                     int limit = args.integer("limit", 50);
                     if (g.contains(id)) {
                         Comparator<Edge> order = Comparator.comparingLong(Edge::runtimeCount).reversed();
-                        m.put("callers", Views.page(g.incoming(id).stream()
+                        m.put("callers", Results.page(g.incoming(id).stream()
                                 .sorted(order.thenComparing(Edge::caller)).map(e -> Views.edge(e, "caller"))
                                 .toList(), limit));
-                        m.put("callees", Views.page(g.outgoing(id).stream()
+                        m.put("callees", Results.page(g.outgoing(id).stream()
                                 .sorted(order.thenComparing(Edge::callee)).map(e -> Views.edge(e, "callee"))
                                 .toList(), limit));
                     }
@@ -167,8 +172,8 @@ final class AnalysisTools {
                 });
     }
 
-    private ToolDef callPaths() {
-        return new ToolDef("call_paths", "Find call paths", """
+    private Tool callPaths() {
+        return new Tool("call_paths", "Find call paths", """
                 Shortest call chains from any method matching 'from' to any method matching 'to' in the \
                 merged call graph, each step with its provenance (static, runtime, static+runtime), \
                 source lines and runtime count. Use edges=dynamic for chains that actually ran, \
@@ -193,8 +198,8 @@ final class AnalysisTools {
                 });
     }
 
-    private ToolDef checkGuard() {
-        return new ToolDef("check_guard", "Check a guard", """
+    private Tool checkGuard() {
+        return new Tool("check_guard", "Check a guard", """
                 Checks that every call chain from 'from' to 'to' passes through a 'through' method (e.g. a \
                 security check), i.e. that the guard is a caller on the stack. Returns ok=true, or ok=false \
                 with a counterexample path that avoids the guard. The call graph has no order within a \
@@ -219,14 +224,14 @@ final class AnalysisTools {
                 });
     }
 
-    private ToolDef reach(String direction) {
+    private Tool reach(String direction) {
         boolean callers = direction.equals("callers");
         String description = callers
                 ? "Methods that transitively call the given methods, with their distance in calls (1 = direct "
                         + "caller). Answers 'who can reach this?' / impact analysis."
                 : "Methods transitively called by the given methods, with their distance in calls (1 = direct "
                         + "callee). Answers 'what can this reach?'.";
-        return new ToolDef(direction, callers ? "Transitive callers" : "Transitive callees", description, true,
+        return new Tool(direction, callers ? "Transitive callers" : "Transitive callees", description, true,
                 Schema.object().model().string("method", PATTERN_HELP, true).edges()
                         .integer("max_depth", "Maximum distance in calls", 20)
                         .integer("limit", "Maximum methods listed", 50).build(),
@@ -247,13 +252,13 @@ final class AnalysisTools {
                             }).toList();
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("start_methods", start.stream().sorted().limit(10).map(Views::name).toList());
-                    m.putAll(Views.page(rows, args.integer("limit", 50)));
+                    m.putAll(Results.page(rows, args.integer("limit", 50)));
                     return m;
                 });
     }
 
-    private ToolDef gapReport() {
-        return new ToolDef("gap_report", "Static vs runtime gaps", """
+    private Tool gapReport() {
+        return new Tool("gap_report", "Static vs runtime gaps", """
                 Where the static and runtime views disagree (needs recordings; the edge lists also need a \
                 static analysis): runtime-only edges (no static call site: reflection, dynamic proxies, \
                 EJB/CDI interceptors, callbacks through uninstrumented code), static edges never exercised \
@@ -272,18 +277,18 @@ final class AnalysisTools {
                     m.put("instrumented_methods", model.instrumented().size());
                     m.put("executed_instrumented_methods", ran);
                     if (model.hasStatic()) {
-                        m.put("runtime_only_edges", Views.page(r.runtimeOnlyEdges().stream()
+                        m.put("runtime_only_edges", Results.page(r.runtimeOnlyEdges().stream()
                                 .map(e -> Views.edge(e, null)).toList(), limit));
-                        m.put("unexercised_static_edges", Views.page(r.unexercisedStaticEdges().stream()
+                        m.put("unexercised_static_edges", Results.page(r.unexercisedStaticEdges().stream()
                                 .map(e -> Views.edge(e, null)).toList(), limit));
                     }
-                    m.put("never_executed", Views.page(r.neverExecuted().stream().map(Views::name).toList(), limit));
+                    m.put("never_executed", Results.page(r.neverExecuted().stream().map(Views::name).toList(), limit));
                     return m;
                 });
     }
 
-    private ToolDef hotspots() {
-        return new ToolDef("hotspots", "Runtime hotspots", """
+    private Tool hotspots() {
+        return new Tool("hotspots", "Runtime hotspots", """
                 Methods ranked by runtime statistics summed over the recordings: self time (excluding \
                 instrumented callees), total time, call count, or exceptional exits.""", true,
                 Schema.object().model()
@@ -313,12 +318,12 @@ final class AnalysisTools {
                                 r.putAll(Views.stats(e.getValue()));
                                 return r;
                             }).toList();
-                    return Views.page(rows, args.integer("limit", 30));
+                    return Results.page(rows, args.integer("limit", 30));
                 });
     }
 
-    private ToolDef runDetectors() {
-        return new ToolDef("run_detectors", "Run bug detectors", """
+    private Tool runDetectors() {
+        return new Tool("run_detectors", "Run bug detectors", """
                 Runs javacg's bug detectors (null dereferences, resource leaks, swallowed exceptions, lock \
                 order inversions/deadlocks, deep recursion, dead private methods, unexpected runtime \
                 exceptions) over the model. Each finding has a severity (how bad if real), a confidence \
@@ -358,10 +363,10 @@ final class AnalysisTools {
                     String rule = args.string("rule", null);
                     List<Finding> shown = rule == null ? findings
                             : findings.stream().filter(f -> f.rule().startsWith(rule)).toList();
-                    m.put("by_severity", count(shown, f -> Views.lower(f.severity())));
+                    m.put("by_severity", count(shown, f -> Results.lower(f.severity())));
                     m.put("by_rule", count(shown, Finding::rule));
                     m.put("confirmed_at_runtime", shown.stream().filter(Finding::confirmedAtRuntime).count());
-                    m.putAll(Views.page(shown.stream().map(Views::finding).toList(), args.integer("limit", 50)));
+                    m.putAll(Results.page(shown.stream().map(Views::finding).toList(), args.integer("limit", 50)));
                     if (!model.hasRuntime()) {
                         m.put("note", "Static analysis only: runtime rules (runtime.*, deadlock.lock-order, "
                                 + "recursion.deep) need recordings");
@@ -372,8 +377,8 @@ final class AnalysisTools {
                 });
     }
 
-    private ToolDef listDetectors() {
-        return new ToolDef("list_detectors", "List bug detectors", "Lists the bug detectors and the rules each "
+    private Tool listDetectors() {
+        return new Tool("list_detectors", "List bug detectors", "Lists the bug detectors and the rules each "
                 + "reports, with a one-line description of each rule.", true, Schema.object().build(),
                 args -> Map.of("detectors", Detectors.all().stream().map(d -> {
                     Map<String, Object> m = new LinkedHashMap<>();
@@ -383,8 +388,8 @@ final class AnalysisTools {
                 }).toList()));
     }
 
-    private ToolDef exportGraph() {
-        return new ToolDef("export_graph", "Export the call graph", """
+    private Tool exportGraph() {
+        return new Tool("export_graph", "Export the call graph", """
                 Writes the merged call graph of a model to a file: json (methods and edges with kinds, lines \
                 and provenance), dot (Graphviz, one node per method) or dot_classes (one node per class). \
                 Optionally restricted to the methods reachable from, or reaching, a pattern.""", false,
@@ -471,7 +476,7 @@ final class AnalysisTools {
             inputs.put("lib", l.inputs().lib().stream().map(Path::toString).toList());
         }
         inputs.put("trace", l.inputs().trace().stream().map(Path::toString).toList());
-        inputs.put("algorithm", Views.lower(l.inputs().algorithm()));
+        inputs.put("algorithm", Results.lower(l.inputs().algorithm()));
         m.put("inputs", inputs);
         Map<String, Long> byProvenance = new TreeMap<>(model.graph().edges()
                 .collect(Collectors.groupingBy(e -> Views.provenance(e.provenance()), Collectors.counting())));
@@ -505,7 +510,7 @@ final class AnalysisTools {
             m.put("runtime", r);
         }
         if (!l.warnings().isEmpty()) {
-            m.put("warnings", Views.page(l.warnings(), 20));
+            m.put("warnings", Results.page(l.warnings(), 20));
         }
         return m;
     }

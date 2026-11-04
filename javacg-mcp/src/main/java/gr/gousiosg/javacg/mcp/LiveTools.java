@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -46,12 +51,12 @@ final class LiveTools {
         STATUS, START, STOP, DUMP
     }
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(listJvms(), attachAgent(), recorder());
     }
 
-    private ToolDef listJvms() {
-        return new ToolDef("list_jvms", "List local JVMs", """
+    private Tool listJvms() {
+        return new Tool("list_jvms", "List local JVMs", """
                 Lists the JVMs on this machine that the server can attach to (same user, attach not \
                 disabled), with their main class or jar and arguments, and whether the javacg agent is \
                 loaded in them. A WildFly server shows as jboss-modules.jar.""", true,
@@ -74,8 +79,8 @@ final class LiveTools {
                 });
     }
 
-    private ToolDef attachAgent() {
-        return new ToolDef("attach_agent", "Attach the javacg agent", """
+    private Tool attachAgent() {
+        return new Tool("attach_agent", "Attach the javacg agent", """
                 Loads the javacg agent into a running local JVM (Attach API). Classes matching incl are \
                 instrumented, including already loaded ones; methods executing at that moment keep running \
                 uninstrumented. Options are the agent's key=value list separated by ';', e.g. \
@@ -123,8 +128,8 @@ final class LiveTools {
                 });
     }
 
-    private ToolDef recorder() {
-        return new ToolDef("recorder", "Control recordings", """
+    private Tool recorder() {
+        return new Tool("recorder", "Control recordings", """
                 Controls the javacg agent's recorder in a running JVM through its javacg:type=Recorder \
                 MBean. status: whether it is recording, the label and directories. start: completes the \
                 current recording and starts a new one named by label (e.g. the test about to run). stop: \
@@ -151,7 +156,7 @@ final class LiveTools {
                         }
                         RecorderControlMXBean rec = JMX.newMXBeanProxy(conn, name, RecorderControlMXBean.class);
                         Map<String, Object> m = new LinkedHashMap<>();
-                        m.put("action", Views.lower(action));
+                        m.put("action", Results.lower(action));
                         switch (action) {
                             case START -> {
                                 String label = args.string("label", "mcp-" + System.currentTimeMillis());

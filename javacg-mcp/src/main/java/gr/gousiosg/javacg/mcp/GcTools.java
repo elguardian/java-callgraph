@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -18,12 +23,12 @@ import gr.gousiosg.javacg.devtools.jvm.Jcmd;
 /** GC logs and class histograms: pauses, overhead, allocation, leaks. */
 final class GcTools {
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(gcLog(), histogram());
     }
 
-    private ToolDef gcLog() {
-        return new ToolDef("gc_log_analyze", "Analyze a GC log", """
+    private Tool gcLog() {
+        return new Tool("gc_log_analyze", "Analyze a GC log", """
                 Reads GC logs: JDK 9+ unified logging (-Xlog:gc or gc*, any decorations; G1, Parallel, Serial, \
                 ZGC, Shenandoah) and JDK 8 -XX:+PrintGCDetails (Parallel, CMS, G1). Reports the collector, pause \
                 statistics per kind (count, total, p50/p90/p99, max), concurrent cycles, the share of time \
@@ -82,13 +87,13 @@ final class GcTools {
                     if (!log.warnings().isEmpty()) {
                         m.put("warnings", log.warnings());
                     }
-                    Views.table(m, stats, null, args);
+                    Results.table(m, stats, null, args);
                     return m;
                 });
     }
 
-    private ToolDef histogram() {
-        return new ToolDef("heap_histogram", "Compare class histograms", """
+    private Tool histogram() {
+        return new Tool("heap_histogram", "Compare class histograms", """
                 Reads class histograms (jcmd GC.class_histogram, jmap -histo), several per file or several \
                 files in order, or takes them from a running local JVM by pid, and shows which classes grow: \
                 instances and bytes gained from the first to the last snapshot, and the classes growing in every \
@@ -164,7 +169,7 @@ final class GcTools {
                         m.put("leak_candidates", growth.stream().filter(HeapHistogram.Growth::growingEverywhere)
                                 .filter(g -> g.bytesDelta() > 0).limit(top).map(HeapHistogram.Growth::className).toList());
                     }
-                    Views.table(m, rows, null, args);
+                    Results.table(m, rows, null, args);
                     return m;
                 });
     }

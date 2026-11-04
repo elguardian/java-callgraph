@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,19 +20,19 @@ import gr.gousiosg.javacg.devtools.maven.MavenBuild;
 import gr.gousiosg.javacg.devtools.maven.MavenLogParser;
 import gr.gousiosg.javacg.devtools.maven.MavenRunner;
 import gr.gousiosg.javacg.devtools.maven.Reactor;
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
 
 /** Maven: the reactor from the poms, running builds, reading build logs. */
 final class MavenTools {
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(reactor(), run(), log());
     }
 
-    private ToolDef reactor() {
-        return new ToolDef("maven_reactor", "Inspect the Maven reactor", """
+    private Tool reactor() {
+        return new Tool("maven_reactor", "Inspect the Maven reactor", """
                 Reads the poms of a multi-module Maven project without running Maven: every module with \
                 its coordinates, packaging, directory and the reactor modules it depends on, in build order. \
                 Answers what to build: 'projects' with also_make/also_make_dependents gives the modules of \
@@ -113,7 +118,7 @@ final class MavenTools {
                             m.put("maven_errors", run.build().errors());
                         }
                     }
-                    Views.table(m, rows.stream().map(row -> {
+                    Results.table(m, rows.stream().map(row -> {
                         Map<String, Object> t = new LinkedHashMap<>(row);
                         t.remove("group_id");
                         t.remove("version");
@@ -144,8 +149,8 @@ final class MavenTools {
         return m;
     }
 
-    private ToolDef run() {
-        return new ToolDef("maven_run", "Run Maven", """
+    private Tool run() {
+        return new Tool("maven_run", "Run Maven", """
                 Runs Maven in a project (its mvnw if present, else mvn) with the given arguments, in batch \
                 mode without download progress, and returns the parsed outcome instead of the raw output: \
                 status, per-module status and time, compiler errors with file:line:column, failed tests \
@@ -196,8 +201,8 @@ final class MavenTools {
                 });
     }
 
-    private ToolDef log() {
-        return new ToolDef("maven_log", "Read a Maven build log", """
+    private Tool log() {
+        return new Tool("maven_log", "Read a Maven build log", """
                 Parses Maven console output from a file or pasted text (any Maven 3.9/4 batch output, with or \
                 without timestamps): status, modules with status and time, compiler errors and warnings, \
                 failed tests with stack traces, goal failures, the -rf resume argument, warnings grouped by \
@@ -236,7 +241,7 @@ final class MavenTools {
     static Map<String, Object> view(MavenBuild b, Path projectDir, ToolArgs args) {
         List<String> app = args.strings("app_packages");
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("status", Views.lower(b.status()));
+        m.put("status", Results.lower(b.status()));
         if (b.totalSeconds() >= 0) {
             m.put("total_seconds", b.totalSeconds());
         }
@@ -259,7 +264,7 @@ final class MavenTools {
             m.put("compiler_errors", b.compilerErrors().stream().limit(50).map(c -> compiler(c, projectDir)).toList());
         }
         if (!b.compilerWarnings().isEmpty()) {
-            m.put("compiler_warnings", Views.page(b.compilerWarnings().stream().map(c -> compiler(c, projectDir)).toList(),
+            m.put("compiler_warnings", Results.page(b.compilerWarnings().stream().map(c -> compiler(c, projectDir)).toList(),
                     20));
         }
         if (!b.testFailures().isEmpty()) {
@@ -309,7 +314,7 @@ final class MavenTools {
             m.put("resume_with", "-rf " + b.resumeFrom());
         }
         if (!b.warnings().isEmpty()) {
-            m.put("warnings", Views.page(b.warnings().stream().map(w -> {
+            m.put("warnings", Results.page(b.warnings().stream().map(w -> {
                 Map<String, Object> r = new LinkedHashMap<>();
                 r.put("count", w.count());
                 r.put("message", w.count() == 1 ? w.example() : w.template());
@@ -320,9 +325,9 @@ final class MavenTools {
             }).toList(), 20));
         }
         if (!b.errors().isEmpty()) {
-            m.put("other_errors", Views.page(b.errors(), 30));
+            m.put("other_errors", Results.page(b.errors(), 30));
         }
-        Views.table(m, modules, List.of("module", "status", "seconds"), args);
+        Results.table(m, modules, List.of("module", "status", "seconds"), args);
         return m;
     }
 

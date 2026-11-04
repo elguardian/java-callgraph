@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Jobs;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -24,12 +29,12 @@ final class WatchTools {
         this.jobs = jobs;
     }
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(watch());
     }
 
-    private ToolDef watch() {
-        return new ToolDef("watch_method", "Watch a method in a running JVM", """
+    private Tool watch() {
+        return new Tool("watch_method", "Watch a method in a running JVM", """
                 Instruments the methods matching 'method' in a running JVM for 'seconds', then removes the \
                 instrumentation (the classes get their previous bytecode back; the agent also stops the watch \
                 on its own at the deadline). Reports the number of calls, failures, latency (total, max, \

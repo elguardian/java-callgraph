@@ -1,5 +1,6 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.ToolRegistry;
 import static gr.gousiosg.javacg.mcp.Fixture.error;
 import static gr.gousiosg.javacg.mcp.Fixture.items;
 import static gr.gousiosg.javacg.mcp.Fixture.map;
@@ -108,7 +109,7 @@ class LiveToolsIT {
     private static Map<String, Object> awaitRecorder(JavacgTools tools, String pid) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
         while (true) {
-            JavacgTools.Result r = tools.call("recorder", Fixture.args("pid", pid, "action", "status"));
+            ToolRegistry.Result r = tools.call("recorder", Fixture.args("pid", pid, "action", "status"));
             if (!r.isError()) {
                 return map(r.value());
             }

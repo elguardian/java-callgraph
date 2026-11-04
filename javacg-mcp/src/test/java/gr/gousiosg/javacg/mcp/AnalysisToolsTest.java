@@ -1,5 +1,6 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
 import static gr.gousiosg.javacg.mcp.Fixture.error;
 import static gr.gousiosg.javacg.mcp.Fixture.items;
 import static gr.gousiosg.javacg.mcp.Fixture.map;
@@ -129,7 +130,7 @@ class AnalysisToolsTest {
 
     @Test
     void everyToolHasAnObjectSchema() {
-        for (ToolDef t : tools.all()) {
+        for (Tool t : tools.all()) {
             assertEquals("object", t.inputSchema().get("type"), t.name());
             assertTrue(t.description().length() > 20, t.name());
         }

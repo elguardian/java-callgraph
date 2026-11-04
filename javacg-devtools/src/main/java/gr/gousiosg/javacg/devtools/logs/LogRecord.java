@@ -5,8 +5,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
 
 /**
  * One log record: the line matching the format and the continuation lines that follow it

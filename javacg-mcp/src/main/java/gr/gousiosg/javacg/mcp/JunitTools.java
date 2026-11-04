@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,8 +15,8 @@ import java.util.Map;
 import gr.gousiosg.javacg.devtools.junit.ReportReader;
 import gr.gousiosg.javacg.devtools.junit.TestCase;
 import gr.gousiosg.javacg.devtools.junit.TestRun;
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
 
 /** Tools over JUnit XML reports (surefire, failsafe, Gradle). */
 final class JunitTools {
@@ -21,12 +26,12 @@ final class JunitTools {
 
     private final ReportReader reader = new ReportReader();
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(summary(), failures(), compare());
     }
 
-    private ToolDef summary() {
-        return new ToolDef("junit_summary", "Summarize test results", """
+    private Tool summary() {
+        return new Tool("junit_summary", "Summarize test results", """
                 Summarizes JUnit XML reports (Maven surefire/failsafe TEST-*.xml, Gradle test-results): \
                 totals, time and counts per module or test class, the slowest tests, failed tests with \
                 their exception and the first application frame, failures grouped by cause (same \
@@ -58,7 +63,7 @@ final class JunitTools {
                         Map<String, Object> r = new LinkedHashMap<>();
                         r.put("test", c.id());
                         r.put("seconds", c.seconds());
-                        r.put("status", Views.lower(c.status()));
+                        r.put("status", Results.lower(c.status()));
                         return r;
                     }).toList());
                     m.put("failures", run.failures().stream().limit(50).map(c -> failureLine(c, app)).toList());
@@ -75,13 +80,13 @@ final class JunitTools {
                     if (!flaky.isEmpty()) {
                         m.put("flaky", flaky.stream().map(c -> c.id() + " (" + c.reruns() + " rerun(s))").toList());
                     }
-                    Views.table(m, groups, null, args);
+                    Results.table(m, groups, null, args);
                     return m;
                 });
     }
 
-    private ToolDef failures() {
-        return new ToolDef("junit_failures", "Show test failures", """
+    private Tool failures() {
+        return new Tool("junit_failures", "Show test failures", """
                 Failed tests (failures and errors; flaky ones with include_flaky) from JUnit XML reports, \
                 with the exception, message, a stack trace trimmed of test-runner and reflection frames \
                 (or the full one), the failure signature, and optionally the tail of the test's stdout and \
@@ -115,13 +120,13 @@ final class JunitTools {
                     if (rows.size() < selected.size()) {
                         m.put("truncated", true);
                     }
-                    Views.table(m, tableRows, List.of("test", "status", "exception", "message", "where"), args);
+                    Results.table(m, tableRows, List.of("test", "status", "exception", "message", "where"), args);
                     return m;
                 });
     }
 
-    private ToolDef compare() {
-        return new ToolDef("junit_compare", "Compare two test runs", """
+    private Tool compare() {
+        return new Tool("junit_compare", "Compare two test runs", """
                 Compares two sets of JUnit reports (e.g. a copy of target/surefire-reports from before a \
                 change, and the current one): tests newly failing, fixed, still failing, added, removed, \
                 and tests that became slower. Tests are matched by module and Class#method.""", true,
@@ -140,12 +145,12 @@ final class JunitTools {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("baseline", totals(before.totals()));
                     m.put("current", totals(after.totals()));
-                    m.put("newly_failing", Views.page(c.newlyFailing().stream().map(t -> failureLine(t, List.of()))
+                    m.put("newly_failing", Results.page(c.newlyFailing().stream().map(t -> failureLine(t, List.of()))
                             .toList(), limit));
-                    m.put("fixed", Views.page(c.fixed().stream().map(TestCase::id).toList(), limit));
-                    m.put("still_failing", Views.page(c.stillFailing().stream().map(TestCase::id).toList(), limit));
-                    m.put("added", Views.page(c.added().stream().map(TestCase::id).toList(), limit));
-                    m.put("removed", Views.page(c.removed(), limit));
+                    m.put("fixed", Results.page(c.fixed().stream().map(TestCase::id).toList(), limit));
+                    m.put("still_failing", Results.page(c.stillFailing().stream().map(TestCase::id).toList(), limit));
+                    m.put("added", Results.page(c.added().stream().map(TestCase::id).toList(), limit));
+                    m.put("removed", Results.page(c.removed(), limit));
                     List<Map<String, Object>> slower = c.slower().stream().map(s -> {
                         Map<String, Object> r = new LinkedHashMap<>();
                         r.put("test", s.test().id());
@@ -154,7 +159,7 @@ final class JunitTools {
                         r.put("percent", Double.isInfinite(s.percent()) ? "new time" : Math.round(s.percent()) + "%");
                         return r;
                     }).toList();
-                    m.put("slower", Views.page(slower, limit));
+                    m.put("slower", Results.page(slower, limit));
                     List<Map<String, Object>> changes = new ArrayList<>();
                     c.newlyFailing().forEach(t -> changes.add(change(t.id(), "newly failing")));
                     c.fixed().forEach(t -> changes.add(change(t.id(), "fixed")));
@@ -163,7 +168,7 @@ final class JunitTools {
                     c.removed().forEach(id -> changes.add(change(id, "removed")));
                     c.slower().forEach(s -> changes.add(change(s.test().id(), "slower: " + s.before() + " s -> "
                             + s.after() + " s")));
-                    Views.table(m, changes, List.of("test", "change"), args);
+                    Results.table(m, changes, List.of("test", "change"), args);
                     return m;
                 });
     }
@@ -211,7 +216,7 @@ final class JunitTools {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("test", c.id());
         m.put("module", c.module());
-        m.put("status", Views.lower(c.status()));
+        m.put("status", Results.lower(c.status()));
         TestCase.Problem p = c.mainProblem();
         StackTrace t = TestRun.trace(c);
         if (p != null) {

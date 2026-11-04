@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,8 +28,8 @@ import gr.gousiosg.javacg.devtools.logs.LogFormat;
 import gr.gousiosg.javacg.devtools.logs.LogQuery;
 import gr.gousiosg.javacg.devtools.logs.LogReader;
 import gr.gousiosg.javacg.devtools.logs.LogRecord;
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
 
 /** Log files parsed by layout pattern: search, counts, groups, error groups, histograms. */
 final class LogTools {
@@ -44,12 +49,12 @@ final class LogTools {
 
     private static final Pattern DURATION = Pattern.compile("(\\d+)\\s*(ms|s|m|h|d)");
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(query(), pattern());
     }
 
-    private ToolDef query() {
-        return new ToolDef("log_query", "Query log files", """
+    private Tool query() {
+        return new Tool("log_query", "Query log files", """
                 Reads log files (plain or .gz) by their layout pattern, keeping multi-line messages and \
                 stack traces with their record, and answers one question per call: records (matching \
                 records, optionally with context records around them, or the last ones with tail), count \
@@ -123,7 +128,7 @@ final class LogTools {
                         case GROUPS -> {
                             r.groups().stream().limit(limit).forEach(g -> {
                                 Map<String, Object> row = new LinkedHashMap<>();
-                                row.put(Views.lower(groupBy), g.key());
+                                row.put(Results.lower(groupBy), g.key());
                                 row.put("count", g.count());
                                 if (g.first() != LogRecord.NO_TIME) {
                                     row.put("first", time(g.first(), zone));
@@ -137,7 +142,7 @@ final class LogTools {
                             });
                             m.put("groups", rows);
                             m.put("distinct", r.groups().size());
-                            columns = List.of(Views.lower(groupBy), "count", "first", "last");
+                            columns = List.of(Results.lower(groupBy), "count", "first", "last");
                         }
                         case ERRORS -> {
                             List<String> app = args.strings("app_packages");
@@ -181,13 +186,13 @@ final class LogTools {
                         case COUNT -> {
                         }
                     }
-                    Views.table(m, rows, columns, args);
+                    Results.table(m, rows, columns, args);
                     return m;
                 });
     }
 
-    private ToolDef pattern() {
-        return new ToolDef("log_pattern", "Check a log format", """
+    private Tool pattern() {
+        return new Tool("log_pattern", "Check a log format", """
                 Shows the built-in log formats, the regex a layout pattern compiles to, and how the first \
                 records of a file parse with it (or which preset 'auto' detects), to check a pattern before \
                 querying. Reports how many of the first lines start a record.""", true,

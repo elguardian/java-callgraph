@@ -11,7 +11,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import gr.gousiosg.javacg.core.io.CallGraphJson;
-import gr.gousiosg.javacg.core.io.JsonWriter;
+import gr.gousiosg.javacg.commons.json.JsonWriter;
 
 class CallGraphTest {
 

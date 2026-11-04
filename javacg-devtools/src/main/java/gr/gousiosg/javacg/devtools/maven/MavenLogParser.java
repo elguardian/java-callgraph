@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import gr.gousiosg.javacg.devtools.logs.LogFormat;
 import gr.gousiosg.javacg.devtools.logs.LogRecord;
-import gr.gousiosg.javacg.devtools.logs.Templates;
+import gr.gousiosg.javacg.commons.text.Templates;
 
 /**
  * Reads Maven 3.9 / 4 console output ({@code -B}, with or without timestamps and thread names

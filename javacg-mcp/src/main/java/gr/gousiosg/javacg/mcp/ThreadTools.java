@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -11,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import gr.gousiosg.javacg.devtools.jvm.Jcmd;
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
 import gr.gousiosg.javacg.devtools.threads.ThreadDump;
 import gr.gousiosg.javacg.devtools.threads.ThreadDumpAnalysis;
 import gr.gousiosg.javacg.devtools.threads.ThreadDumpParser;
@@ -19,12 +24,12 @@ import gr.gousiosg.javacg.devtools.threads.ThreadDumpParser;
 /** Thread dump analysis: deadlocks, lock owners, groups of threads, stuck and hot threads. */
 final class ThreadTools {
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(analyze());
     }
 
-    private ToolDef analyze() {
-        return new ToolDef("thread_dump_analyze", "Analyze thread dumps", """
+    private Tool analyze() {
+        return new Tool("thread_dump_analyze", "Analyze thread dumps", """
                 Analyzes Java thread dumps (jstack, jcmd Thread.print, kill -3 output; JDK 8 to 25; several \
                 dumps per file; dumps inside console or server logs), or takes them from a running local JVM \
                 by pid. Reports: deadlocks (cycles of threads waiting for locks the next one holds, monitors \
@@ -210,7 +215,7 @@ final class ThreadTools {
             r.put("states", p.states());
             return r;
         }).toList());
-        Views.table(m, tableRows, null, args);
+        Results.table(m, tableRows, null, args);
         return m;
     }
 

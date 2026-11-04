@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import gr.gousiosg.javacg.devtools.logs.Templates;
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
+import gr.gousiosg.javacg.commons.text.Templates;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
 
 /**
  * What a set of thread dumps says: deadlocks, who blocks whom, threads doing the same thing,

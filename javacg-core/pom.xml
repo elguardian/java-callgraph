@@ -16,6 +16,10 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>javacg-commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>javacg-rt</artifactId>
     </dependency>
     <dependency>

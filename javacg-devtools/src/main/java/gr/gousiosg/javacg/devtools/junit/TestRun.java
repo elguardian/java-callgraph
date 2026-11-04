@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
-import gr.gousiosg.javacg.devtools.stack.StackTraces;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.stack.StackTraces;
 
 /** The results of a set of reports: totals, slow tests, failures grouped by cause, comparison of two runs. */
 public final class TestRun {
@@ -184,7 +184,7 @@ public final class TestRun {
 
     /** A message with its values replaced by {@code <*>}: {@code expected: <1> but was: <2>} → {@code expected: <*> but was: <*>}. */
     public static String template(String message) {
-        return gr.gousiosg.javacg.devtools.logs.Templates.of(message);
+        return gr.gousiosg.javacg.commons.text.Templates.of(message);
     }
 
     static String firstLine(String s) {

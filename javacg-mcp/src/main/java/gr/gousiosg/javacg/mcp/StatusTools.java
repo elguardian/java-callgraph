@@ -1,5 +1,10 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -16,12 +21,12 @@ import java.util.concurrent.TimeUnit;
 /** daily_status: pending work across Jira, GitHub and GitLab, ordered by what needs me first. */
 final class StatusTools {
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(dailyStatus());
     }
 
-    private ToolDef dailyStatus() {
-        return new ToolDef("daily_status", "Daily status of my work", """
+    private Tool dailyStatus() {
+        return new Tool("daily_status", "Daily status of my work", """
                 Collects my pending work to plan the day: open Jira issues assigned to me (status, priority, due \
                 date, new comments from others), and open GitHub pull requests and GitLab merge requests that I \
                 wrote, where my review is requested, that are assigned to me or that mention me (reviews, \
@@ -124,7 +129,7 @@ final class StatusTools {
                             });
                         }
                     });
-                    Views.table(m, needsRows, null, args);
+                    Results.table(m, needsRows, null, args);
                     return m;
                 });
     }

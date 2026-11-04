@@ -5,9 +5,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import gr.gousiosg.javacg.devtools.stack.StackTrace;
-import gr.gousiosg.javacg.devtools.stack.StackTraceParser;
-import gr.gousiosg.javacg.devtools.table.Csv;
+import gr.gousiosg.javacg.commons.stack.StackTrace;
+import gr.gousiosg.javacg.commons.stack.StackTraceParser;
+import gr.gousiosg.javacg.commons.table.Csv;
 
 /**
  * Known issues from a Jira CSV export: one per distinct stack trace found in an issue's

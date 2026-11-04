@@ -1,5 +1,7 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.Results;
 import static gr.gousiosg.javacg.mcp.Fixture.error;
 import static gr.gousiosg.javacg.mcp.Fixture.ok;
 import static gr.gousiosg.javacg.mcp.Fixture.text;
@@ -47,7 +49,7 @@ class TableToolsTest {
     @Test
     void tableFormatOptionRendersLists() {
         Map<String, Object> into = new java.util.LinkedHashMap<>();
-        Views.table(into, List.of(Map.of("m", "a", "lines", List.of(1, 2))), List.of("m", "lines"),
+        Results.table(into, List.of(Map.of("m", "a", "lines", List.of(1, 2))), List.of("m", "lines"),
                 new ToolArgs(Map.of("table_format", "ascii")));
         assertEquals("+---+-------+\n| m | lines |\n+---+-------+\n| a | 1, 2  |\n+---+-------+\n", into.get("table"));
     }

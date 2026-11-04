@@ -1,5 +1,11 @@
 package gr.gousiosg.javacg.mcp;
 
+import gr.gousiosg.javacg.tool.Tool;
+import gr.gousiosg.javacg.tool.Schema;
+import gr.gousiosg.javacg.tool.ToolArgs;
+import gr.gousiosg.javacg.tool.ToolException;
+import gr.gousiosg.javacg.tool.Results;
+import gr.gousiosg.javacg.tool.Jobs;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -30,12 +36,12 @@ final class JfrTools {
         this.jobs = jobs;
     }
 
-    List<ToolDef> tools() {
+    List<Tool> tools() {
         return List.of(analyze());
     }
 
-    private ToolDef analyze() {
-        return new ToolDef("jfr_analyze", "Analyze a JFR recording", """
+    private Tool analyze() {
+        return new Tool("jfr_analyze", "Analyze a JFR recording", """
                 Summarizes a JDK Flight Recorder file, or records a running local JVM first (jcmd JFR.start for \
                 'seconds', settings 'profile' by default; production-safe, a few percent overhead). Sections: \
                 cpu (hot methods by own samples and anywhere on the stack, the first application frame, hot \
@@ -205,7 +211,7 @@ final class JfrTools {
                 return r;
             }).toList());
         }
-        Views.table(m, tableRows, null, args);
+        Results.table(m, tableRows, null, args);
         return m;
     }
 

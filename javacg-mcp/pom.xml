@@ -20,6 +20,10 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>javacg-tool-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>javacg-devtools</artifactId>
     </dependency>
     <dependency>

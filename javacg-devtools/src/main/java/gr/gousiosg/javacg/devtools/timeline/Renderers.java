@@ -15,8 +15,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import gr.gousiosg.javacg.core.io.JsonWriter;
-import gr.gousiosg.javacg.devtools.table.Table;
+import gr.gousiosg.javacg.commons.json.JsonWriter;
+import gr.gousiosg.javacg.commons.table.Table;
 
 /** Timeline diagrams: ASCII swimlanes, Mermaid gantt, PlantUML concise, Chrome trace JSON, HTML/SVG. */
 public final class Renderers {

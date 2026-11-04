@@ -15,6 +15,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>javacg-commons</artifactId>
+    </dependency>
+    <dependency>
       <!-- recordings (javacg-core) and method patterns -->
       <groupId>${project.groupId}</groupId>
       <artifactId>javacg-analyze</artifactId>

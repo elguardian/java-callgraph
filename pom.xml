@@ -19,6 +19,8 @@
   </licenses>
 
   <modules>
+    <module>javacg-commons</module>
+    <module>javacg-tool-api</module>
     <module>javacg-testkit</module>
     <module>javacg-rt</module>
     <module>javacg-core</module>
@@ -74,6 +76,16 @@
         <version>${junit.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>javacg-commons</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>javacg-tool-api</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
