@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import io.github.elguardian.mcpsettools.devtools.timeline.JfrSource;
-import io.github.elguardian.mcpsettools.devtools.timeline.Timeline;
+import io.github.elguardian.mcpsettools.timeline.Timeline;
 import io.github.elguardian.mcpsettools.testkit.ForkedJvm;
 import io.github.elguardian.mcpsettools.testkit.TestCompiler;
 

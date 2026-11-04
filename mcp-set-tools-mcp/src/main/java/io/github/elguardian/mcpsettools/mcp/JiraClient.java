@@ -1,20 +1,14 @@
 package io.github.elguardian.mcpsettools.mcp;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import io.modelcontextprotocol.json.McpJsonDefaults;
+import io.github.elguardian.mcpsettools.commons.http.HttpJson;
+import io.github.elguardian.mcpsettools.commons.json.Json;
+import io.github.elguardian.mcpsettools.connectors.JiraApi;
 
 /**
  * Searches Jira through its REST API: Jira Data Center/Server ({@code /rest/api/2/search}, a
@@ -51,11 +45,11 @@ final class JiraClient {
     private static final String FIELDS = "summary,status,fixVersions,versions,description,comment";
 
     private final Config config;
-    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15))
-            .followRedirects(HttpClient.Redirect.NORMAL).build();
+    private final JiraApi api;
 
     JiraClient(Config config) {
         this.config = config;
+        this.api = new JiraApi(config.baseUrl(), config.token(), config.user(), null);
     }
 
     String baseUrl() {
@@ -63,23 +57,15 @@ final class JiraClient {
     }
 
     List<Issue> search(String jql, int max) throws IOException, InterruptedException {
-        String query = "?jql=" + URLEncoder.encode(jql, StandardCharsets.UTF_8) + "&maxResults=" + max + "&fields=" + FIELDS;
-        HttpResponse<String> r = get("/rest/api/2/search" + query);
-        if (r.statusCode() == 404 || r.statusCode() == 410) {
-            // Jira Cloud replaced /search with /search/jql
-            r = get("/rest/api/2/search/jql" + query);
+        Object body;
+        try {
+            body = api.search(jql, max, FIELDS);
+        } catch (HttpJson.HttpStatusException e) {
+            throw e.status() == 401 || e.status() == 403 ? new IOException(e.getMessage() + ": check JIRA_TOKEN"
+                    + (config.user() == null ? " (Jira Cloud also needs JIRA_USER)" : ""), e) : e;
         }
-        if (r.statusCode() == 401 || r.statusCode() == 403) {
-            throw new IOException("Jira refused the credentials (HTTP " + r.statusCode() + "): check JIRA_TOKEN"
-                    + (config.user() == null ? " (Jira Cloud also needs JIRA_USER)" : ""));
-        }
-        if (r.statusCode() / 100 != 2) {
-            throw new IOException("Jira search failed (HTTP " + r.statusCode() + "): " + abbreviate(r.body()));
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> body = McpJsonDefaults.getMapper().readValue(r.body(), Map.class);
         List<Issue> issues = new ArrayList<>();
-        for (Object o : list(body.get("issues"))) {
+        for (Object o : list(Json.at(body, "issues"))) {
             Map<?, ?> issue = (Map<?, ?>) o;
             Map<?, ?> fields = issue.get("fields") instanceof Map<?, ?> f ? f : Map.of();
             StringBuilder text = new StringBuilder();
@@ -94,22 +80,9 @@ final class JiraClient {
             }
             String key = String.valueOf(issue.get("key"));
             issues.add(new Issue(key, str(fields.get("summary")), fields.get("status") instanceof Map<?, ?> s ? str(s.get("name"))
-                    : null, names(fields.get("fixVersions")), names(fields.get("versions")), text.toString(),
-                    config.baseUrl() + "/browse/" + key));
+                    : null, names(fields.get("fixVersions")), names(fields.get("versions")), text.toString(), api.browseUrl(key)));
         }
         return issues;
-    }
-
-    private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-        HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(config.baseUrl() + path)).timeout(Duration.ofSeconds(30))
-                .header("Accept", "application/json").GET();
-        if (config.user() != null) {
-            b.header("Authorization", "Basic " + Base64.getEncoder().encodeToString((config.user() + ":" + config.token())
-                    .getBytes(StandardCharsets.UTF_8)));
-        } else {
-            b.header("Authorization", "Bearer " + config.token());
-        }
-        return http.send(b.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }
 
     /** Wiki-markup strings as they are; Atlassian document format (Cloud v3) flattened to its text nodes. */
@@ -145,9 +118,5 @@ final class JiraClient {
 
     private static String str(Object o) {
         return o == null ? null : o.toString();
-    }
-
-    private static String abbreviate(String s) {
-        return s.length() <= 300 ? s : s.substring(0, 300) + "…";
     }
 }

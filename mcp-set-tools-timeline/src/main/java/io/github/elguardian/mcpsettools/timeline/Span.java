@@ -1,4 +1,4 @@
-package io.github.elguardian.mcpsettools.devtools.timeline;
+package io.github.elguardian.mcpsettools.timeline;
 
 import java.util.Map;
 

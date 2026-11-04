@@ -17,6 +17,11 @@ public interface ToolContext {
     /** Diagnostics; never stdout, which may carry a protocol. */
     PrintStream log();
 
+    /** Where tools look for their own ServiceLoader extensions (plugins included). */
+    default ClassLoader classLoader() {
+        return ToolContext.class.getClassLoader();
+    }
+
     static ToolContext standard() {
         return new ToolContext() {
             private final Jobs jobs = new Jobs();

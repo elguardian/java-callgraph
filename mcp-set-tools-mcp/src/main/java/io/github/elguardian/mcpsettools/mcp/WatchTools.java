@@ -18,7 +18,7 @@ import javax.management.remote.JMXConnector;
 import com.sun.tools.attach.VirtualMachine;
 
 import io.github.elguardian.mcpsettools.rt.RecorderControlMXBean;
-import io.modelcontextprotocol.json.McpJsonDefaults;
+import io.github.elguardian.mcpsettools.commons.json.Json;
 
 /** Watching one method of a running JVM for a while: calls, latency percentiles, exceptions, sample values. */
 final class WatchTools {
@@ -136,7 +136,7 @@ final class WatchTools {
                 if (conn.isRegistered(LiveTools.recorderName())) {
                     RecorderControlMXBean rec = JMX.newMXBeanProxy(conn, LiveTools.recorderName(), RecorderControlMXBean.class);
                     String json = call.apply(rec);
-                    return McpJsonDefaults.getMapper().readValue(json, Map.class);
+                    return Json.object(json);
                 }
             }
             if (System.nanoTime() > deadline) {

@@ -31,7 +31,7 @@ final class BundledTools implements ToolProvider {
         all.addAll(new JunitTools().tools());
         all.addAll(new LogTools().tools());
         all.addAll(new MavenTools().tools());
-        all.addAll(new TimelineTools().tools());
+        all.addAll(new TimelineTools(context).tools());
         all.addAll(new ThreadTools().tools());
         all.addAll(new GcTools().tools());
         all.addAll(new JfrTools(jobs).tools());

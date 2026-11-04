@@ -106,6 +106,42 @@ public final class ToolArgs {
         }
     }
 
+    /** An array of objects (e.g. rules), or an empty list when absent. */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> objects(String name) {
+        Object v = values.get(name);
+        if (v == null) {
+            return List.of();
+        }
+        if (!(v instanceof List<?> l) || !l.stream().allMatch(x -> x instanceof Map)) {
+            throw new ToolException("'" + name + "' must be an array of objects");
+        }
+        return (List<Map<String, Object>>) v;
+    }
+
+    /** A regex argument, or null when absent. */
+    public java.util.regex.Pattern regex(String name) {
+        return has(name) ? regex(require(name), name) : null;
+    }
+
+    /** Compiles a regex given in argument {@code what}. */
+    public static java.util.regex.Pattern regex(String regex, String what) {
+        try {
+            return java.util.regex.Pattern.compile(regex);
+        } catch (java.util.regex.PatternSyntaxException e) {
+            throw new ToolException("'" + what + "' is not a valid regex: " + e.getDescription());
+        }
+    }
+
+    /** A required non-blank field of an object argument. */
+    public static String field(Map<String, Object> object, String key) {
+        Object v = object.get(key);
+        if (v == null || v.toString().isBlank()) {
+            throw new ToolException("Missing '" + key + "' in " + object);
+        }
+        return v.toString();
+    }
+
     /** Absolute path; {@code ~/} is the user's home, relative paths are against the server's directory. */
     public static Path path(String raw) {
         String p = raw.equals("~") || raw.startsWith("~/") ? System.getProperty("user.home") + raw.substring(1) : raw;

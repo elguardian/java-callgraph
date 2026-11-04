@@ -1,5 +1,8 @@
 package io.github.elguardian.mcpsettools.devtools.timeline;
 
+import io.github.elguardian.mcpsettools.timeline.Mark;
+import io.github.elguardian.mcpsettools.timeline.Span;
+import io.github.elguardian.mcpsettools.timeline.Timeline;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;

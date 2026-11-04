@@ -1,5 +1,6 @@
 package io.github.elguardian.mcpsettools.devtools.gc;
 
+import io.github.elguardian.mcpsettools.timeline.Mark;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

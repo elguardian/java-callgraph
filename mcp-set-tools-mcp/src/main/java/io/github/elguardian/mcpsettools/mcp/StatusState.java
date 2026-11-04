@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.modelcontextprotocol.json.McpJsonDefaults;
+import io.github.elguardian.mcpsettools.commons.json.Json;
 
 /** What the last run saw, to mark items new or changed since then. */
 final class StatusState {
@@ -56,7 +56,7 @@ final class StatusState {
         root.put("items", m);
         Files.createDirectories(file.toAbsolutePath().getParent());
         Path tmp = Files.createTempFile(file.toAbsolutePath().getParent(), ".status", ".tmp");
-        Files.writeString(tmp, McpJsonDefaults.getMapper().writeValueAsString(root));
+        Files.writeString(tmp, Json.write(root));
         Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     }
 }

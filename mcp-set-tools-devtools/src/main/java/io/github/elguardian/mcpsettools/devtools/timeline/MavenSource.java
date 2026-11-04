@@ -1,5 +1,7 @@
 package io.github.elguardian.mcpsettools.devtools.timeline;
 
+import io.github.elguardian.mcpsettools.timeline.Span;
+import io.github.elguardian.mcpsettools.timeline.Timeline;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

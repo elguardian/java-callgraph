@@ -21,6 +21,8 @@
   <modules>
     <module>mcp-set-tools-commons</module>
     <module>mcp-set-tools-tool-api</module>
+    <module>mcp-set-tools-timeline</module>
+    <module>mcp-set-tools-connectors</module>
     <module>mcp-set-tools-testkit</module>
     <module>mcp-set-tools-rt</module>
     <module>mcp-set-tools-core</module>
@@ -85,6 +87,16 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>mcp-set-tools-tool-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-timeline</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-connectors</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
