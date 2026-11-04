@@ -25,6 +25,7 @@ final class JavacgTools {
     JavacgTools(Models models) {
         List<ToolDef> all = new ArrayList<>(new AnalysisTools(models).tools());
         all.addAll(new LiveTools().tools());
+        all.addAll(new TableTools().tools());
         all.forEach(t -> tools.put(t.name(), t));
     }
 

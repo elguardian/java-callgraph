@@ -14,6 +14,7 @@ import gr.gousiosg.javacg.core.Edge;
 import gr.gousiosg.javacg.core.MethodId;
 import gr.gousiosg.javacg.core.Provenance;
 import gr.gousiosg.javacg.core.trace.TraceSummary;
+import gr.gousiosg.javacg.devtools.table.Table;
 
 /**
  * JSON views of the model types. Methods are always written in the Java form
@@ -165,6 +166,38 @@ final class Views {
         if (n < items.size()) {
             m.put("truncated", true);
         }
+        return m;
+    }
+
+    /**
+     * Adds {@code table}, the rows rendered in the requested {@code table_format}, when the
+     * caller asked for one. {@code columns} null takes every key of the rows.
+     */
+    static void table(Map<String, Object> into, List<? extends Map<String, ?>> rows, List<String> columns, ToolArgs args) {
+        if (!args.has("table_format")) {
+            return;
+        }
+        Table.Format format;
+        try {
+            format = Table.Format.parse(args.require("table_format"));
+        } catch (IllegalArgumentException e) {
+            throw new ToolException("'table_format' must be one of " + List.of(Schema.TABLE_FORMATS));
+        }
+        if (rows.isEmpty()) {
+            into.put("table", "");
+            return;
+        }
+        List<Map<String, Object>> flat = rows.stream().map(Views::flatten).toList();
+        into.put("table", Table.fromMaps(flat, columns).maxWidth(args.integer("table_max_width", 80)).render(format));
+    }
+
+    /** Lists become comma-separated text and nested maps {@code k=v} pairs, so a row fits a table. */
+    private static Map<String, Object> flatten(Map<String, ?> row) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        row.forEach((k, v) -> m.put(k, v instanceof List<?> l ? String.join(", ", l.stream().map(String::valueOf).toList())
+                : v instanceof Map<?, ?> mm ? mm.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
+                        .collect(java.util.stream.Collectors.joining(", "))
+                        : v));
         return m;
     }
 

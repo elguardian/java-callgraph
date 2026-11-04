@@ -27,6 +27,7 @@
     <module>javacg-analyze</module>
     <module>javacg-cli</module>
     <module>javacg-maven-plugin</module>
+    <module>javacg-devtools</module>
     <module>javacg-mcp</module>
   </modules>
 
@@ -102,6 +103,11 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>javacg-agent</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>javacg-devtools</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

@@ -21,6 +21,11 @@ final class ToolArgs {
         return v != null && !(v instanceof String s && s.isBlank());
     }
 
+    /** The argument as parsed from JSON (maps, lists, strings, numbers, booleans), or null. */
+    Object raw(String name) {
+        return values.get(name);
+    }
+
     String require(String name) {
         if (!has(name)) {
             throw new ToolException("Missing argument '" + name + "'");

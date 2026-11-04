@@ -106,7 +106,8 @@ public final class McpMain {
             }
             String text;
             try {
-                text = json.writeValueAsString(r.value());
+                // rendered tables and diagrams go out as they are, not as a quoted JSON string
+                text = r.value() instanceof String s ? s : json.writeValueAsString(r.value());
             } catch (IOException e) {
                 return McpSchema.CallToolResult.builder().addTextContent("Cannot serialize the result: " + e)
                         .isError(true).build();

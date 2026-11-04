@@ -19,6 +19,10 @@
       <artifactId>javacg-analyze</artifactId>
     </dependency>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>javacg-devtools</artifactId>
+    </dependency>
+    <dependency>
       <!-- RecorderControlMXBean, for the JMX proxy -->
       <groupId>${project.groupId}</groupId>
       <artifactId>javacg-rt</artifactId>

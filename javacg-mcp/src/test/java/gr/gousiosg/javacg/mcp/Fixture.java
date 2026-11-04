@@ -68,6 +68,13 @@ final class Fixture {
         return (Map<String, Object>) r.value();
     }
 
+    /** A tool whose result is plain text (tables, diagrams). */
+    static String text(JavacgTools tools, String tool, Object... keyValues) {
+        JavacgTools.Result r = tools.call(tool, args(keyValues));
+        assertFalse(r.isError(), () -> tool + ": " + r.error());
+        return (String) r.value();
+    }
+
     static String error(JavacgTools tools, String tool, Object... keyValues) {
         JavacgTools.Result r = tools.call(tool, args(keyValues));
         assertTrue(r.isError(), () -> tool + " should fail, returned " + r.value());

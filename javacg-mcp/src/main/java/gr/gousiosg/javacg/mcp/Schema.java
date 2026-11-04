@@ -44,6 +44,31 @@ final class Schema {
                 "default", dflt);
     }
 
+    /** A property with an explicit schema (arrays of objects, nested arrays). */
+    Schema raw(String name, String description, boolean isRequired, Map<String, Object> schema) {
+        Map<String, Object> p = new LinkedHashMap<>(schema);
+        p.put("description", description);
+        properties.put(name, p);
+        if (isRequired) {
+            required.add(name);
+        }
+        return this;
+    }
+
+    /** An optional string restricted to {@code values}, without a default. */
+    Schema optionalChoice(String name, String description, String... values) {
+        return property(name, false, "type", "string", "enum", List.of(values), "description", description);
+    }
+
+    /** The {@code table_format} argument of tools that return lists. */
+    Schema tableFormat() {
+        return optionalChoice("table_format", "Also render the main list as a table: ascii (terminal), markdown, "
+                + "jira (wiki markup), slack (code block), csv, tsv or html", TABLE_FORMATS)
+                .integer("table_max_width", "Longest table cell in characters (0: no limit)", 80);
+    }
+
+    static final String[] TABLE_FORMATS = { "ascii", "markdown", "jira", "slack", "csv", "tsv", "html" };
+
     /** The {@code model_id} argument most tools take. */
     Schema model() {
         return string("model_id", "Id returned by load_model. May be omitted when exactly one model is loaded.",
