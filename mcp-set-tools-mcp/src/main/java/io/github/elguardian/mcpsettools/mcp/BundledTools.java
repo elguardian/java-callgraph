@@ -25,10 +25,7 @@ public final class BundledTools implements ToolProvider {
         all.addAll(new ThreadTools().tools());
         all.addAll(new GcTools().tools());
         all.addAll(new JfrTools(jobs).tools());
-        all.addAll(new GitTools(jobs).tools());
-        all.addAll(new IssueTools().tools());
         all.addAll(new WatchTools(jobs).tools());
-        all.addAll(new StatusTools().tools());
         return all;
     }
 }

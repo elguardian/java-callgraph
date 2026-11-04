@@ -36,6 +36,9 @@
     <module>mcp-set-tools-tool-timeline</module>
     <module>mcp-set-tools-tool-logs</module>
     <module>mcp-set-tools-tool-build</module>
+    <module>mcp-set-tools-tool-git</module>
+    <module>mcp-set-tools-tool-issues</module>
+    <module>mcp-set-tools-tool-status</module>
     <module>mcp-set-tools-mcp</module>
   </modules>
 
@@ -121,6 +124,21 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>mcp-set-tools-tool-build</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-git</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-issues</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mcp-set-tools-tool-status</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
