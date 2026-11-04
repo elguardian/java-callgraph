@@ -23,6 +23,11 @@ public interface ToolContext {
     }
 
     static ToolContext standard() {
+        return standard(ToolContext.class.getClassLoader());
+    }
+
+    /** The standard context, with tools looking for their extensions in {@code loader}. */
+    static ToolContext standard(ClassLoader loader) {
         return new ToolContext() {
             private final Jobs jobs = new Jobs();
 
@@ -52,6 +57,11 @@ public interface ToolContext {
             @Override
             public PrintStream log() {
                 return System.err;
+            }
+
+            @Override
+            public ClassLoader classLoader() {
+                return loader;
             }
         };
     }

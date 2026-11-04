@@ -1,7 +1,5 @@
 package io.github.elguardian.mcpsettools.mcp;
 
-import io.github.elguardian.mcpsettools.tool.Tool;
-import io.github.elguardian.mcpsettools.tool.ToolRegistry;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,52 +8,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import io.github.elguardian.mcpsettools.analyze.report.SarifWriter;
+import io.github.elguardian.mcpsettools.tool.ToolContext;
+import io.github.elguardian.mcpsettools.tool.ToolRegistry;
 import io.modelcontextprotocol.json.McpJsonDefaults;
 import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.server.McpServer;
-import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
 
 /**
- * {@code java -jar mcp-set-tools-mcp.jar}: an MCP server on stdin/stdout. Models stay loaded for the
- * life of the process, so the static analysis of a deployment is done once per session.
+ * {@code java -jar mcp-set-tools-mcp.jar}: an MCP server on stdin/stdout for every tool module on the
+ * class path and in the plugins directory. Tool state (models, jobs) lives for the process.
  */
 public final class McpMain {
-
-    static final String INSTRUCTIONS = """
-            mcp-set-tools is a toolbox for working on Java projects.
-            Call graphs: mcp-set-tools combines a static call graph built from bytecode with runtime recordings \
-            made by the mcp-set-tools agent. load_model with the application jars/WAR as app (third-party jars \
-            as lib) and/or recording directories as trace; find_methods to get exact method names; then \
-            call_paths, check_guard, callers/callees, describe_method, gap_report, hotspots or \
-            run_detectors on the returned model_id. To record a running JVM: list_jvms, attach_agent \
-            with incl= patterns, recorder start/stop, then load_model with the stopped recording's \
-            directory as trace. Method names in results can be passed back as patterns.
-            Builds and tests: maven_reactor (modules, build order, what a change affects), maven_run \
-            (runs Maven, returns compiler errors, failed tests and module status instead of the raw \
-            log), maven_log (parses an existing log); junit_summary, junit_failures and junit_compare \
-            read surefire/failsafe/Gradle XML reports.
-            Logs: log_query searches, counts, groups and histograms log files by their layout pattern \
-            (presets for WildFly, logback, log4j2, Spring Boot, Maven, or 'auto'); log_pattern checks a \
-            pattern first. stacktrace_parse explains a pasted stack trace.
-            Concurrency: timeline draws what threads did over time from a recording, logs, a maven_run \
-            log or given events, with overlap and lock-wait analysis.
-            Sustaining: thread_dump_analyze (deadlocks, lock owners, stuck and hot threads), gc_log_analyze \
-            and heap_histogram (pauses, leaks), jfr_analyze (CPU, locks, allocation, I/O from a recording or \
-            a live pid), watch_method (calls, latency and values of one method in a running JVM), \
-            stacktrace_map (which version produced a trace, with source lines), known_issue_match (known \
-            issues and Jira), bisect_run (the commit that broke a test). Long tools return a job_id: poll \
-            job_status.
-            Daily work: daily_status lists open Jira issues assigned to the user and their open GitHub pull \
-            requests and GitLab merge requests (authored, review requested, assigned, mentioned), ordered by \
-            what needs them first, with new feedback since the last run.
-            Output: tools returning lists take table_format (ascii, markdown, jira, slack, csv, tsv, \
-            html); table_render formats any rows for pasting into Jira, Slack or a terminal.""";
 
     private McpMain() {
     }
@@ -68,22 +40,48 @@ public final class McpMain {
                 System.getProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn"));
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.err");
 
+        ToolRegistry registry = registry();
+        registry.warnings().forEach(w -> System.err.println("[mcp-set-tools] " + w));
         McpJsonMapper json = McpJsonDefaults.getMapper();
-        ServerTools tools = new ServerTools();
+        McpBridge bridge = new McpBridge(registry, json);
         CountDownLatch closed = new CountDownLatch(1);
         // the client ends the session by closing stdin
         StdioServerTransportProvider transport = new StdioServerTransportProvider(json,
                 new EofSignallingInput(new FileInputStream(FileDescriptor.in), closed::countDown), protocolOut);
         McpSyncServer server = McpServer.sync(transport)
-                .serverInfo("mcp-set-tools", SarifWriter.version())
-                .instructions(INSTRUCTIONS)
+                .serverInfo("mcp-set-tools", version())
+                .instructions(bridge.instructions())
                 .capabilities(McpSchema.ServerCapabilities.builder().tools(false).build())
                 .jsonMapper(json)
-                .tools(tools.all().stream().map(t -> specification(t, tools, json)).toList())
+                .tools(bridge.specifications())
                 .build();
         Runtime.getRuntime().addShutdownHook(new Thread(server::closeGracefully, "mcp-set-tools-mcp-shutdown"));
         closed.await();
         System.exit(0);
+    }
+
+    /** The bundled providers and the plugins', minus the tools disabled in {@code tools.json}. */
+    static ToolRegistry registry() {
+        List<String> warnings = new ArrayList<>();
+        ToolContext base = ToolContext.standard(McpMain.class.getClassLoader());
+        Path plugins = PluginLoader.directory(base);
+        ClassLoader loader = PluginLoader.load(plugins, McpMain.class.getClassLoader(), warnings);
+        ToolContext context = ToolContext.standard(loader);
+        ToolsConfig config = ToolsConfig.read(context.home().resolve("tools.json"), warnings);
+        warnings.forEach(w -> context.log().println("[mcp-set-tools] " + w));
+        return ToolRegistry.load(loader, context, config.disabled(), List.of());
+    }
+
+    static String version() {
+        try (InputStream in = McpMain.class.getResourceAsStream("version.properties")) {
+            Properties p = new Properties();
+            if (in != null) {
+                p.load(in);
+            }
+            return p.getProperty("version", "unknown");
+        } catch (IOException e) {
+            return "unknown";
+        }
     }
 
     /** Runs a callback once when the stream reports end of input. */
@@ -114,27 +112,5 @@ public final class McpMain {
             }
             return n;
         }
-    }
-
-    private static SyncToolSpecification specification(Tool t, ServerTools tools, McpJsonMapper json) {
-        McpSchema.Tool tool = McpSchema.Tool.builder(t.name(), t.inputSchema()).title(t.title()).description(t.description())
-                .annotations(McpSchema.ToolAnnotations.builder().title(t.title()).readOnlyHint(t.readOnly())
-                        .destructiveHint(false).openWorldHint(false).build())
-                .build();
-        return SyncToolSpecification.builder().tool(tool).callHandler((exchange, request) -> {
-            ToolRegistry.Result r = tools.call(t.name(), request.arguments());
-            if (r.isError()) {
-                return McpSchema.CallToolResult.builder().addTextContent(r.error()).isError(true).build();
-            }
-            String text;
-            try {
-                // rendered tables and diagrams go out as they are, not as a quoted JSON string
-                text = r.value() instanceof String s ? s : json.writeValueAsString(r.value());
-            } catch (IOException e) {
-                return McpSchema.CallToolResult.builder().addTextContent("Cannot serialize the result: " + e)
-                        .isError(true).build();
-            }
-            return McpSchema.CallToolResult.builder().addTextContent(text).isError(false).build();
-        }).build();
     }
 }

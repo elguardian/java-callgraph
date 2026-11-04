@@ -21,4 +21,11 @@ public final class GitToolProvider implements ToolProvider {
         all.addAll(new GitTools(context.jobs()).tools());
         return all;
     }
+
+    @Override
+    public String instructions() {
+        return """
+                Versions: stacktrace_map (which version produced a trace, with source lines), bisect_run (the commit \
+                that broke a test).""";
+    }
 }

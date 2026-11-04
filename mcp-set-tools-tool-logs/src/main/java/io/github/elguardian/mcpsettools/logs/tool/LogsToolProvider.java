@@ -21,4 +21,11 @@ public final class LogsToolProvider implements ToolProvider {
         all.addAll(new LogTools().tools());
         return all;
     }
+
+    @Override
+    public String instructions() {
+        return """
+                Logs: log_query searches, counts, groups and histograms log files by their layout pattern (presets for \
+                WildFly, logback, log4j2, Spring Boot, Maven, or 'auto'); log_pattern checks a pattern first.""";
+    }
 }

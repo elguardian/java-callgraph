@@ -66,7 +66,7 @@ public final class ToolRegistry {
     private void add(List<ToolProvider> providers, Set<String> disabled) {
         Set<String> seenProviders = new java.util.HashSet<>();
         for (ToolProvider p : providers) {
-            if (!seenProviders.add(p.getClass().getName())) {
+            if (!seenProviders.add(p.getClass().getName() + ":" + p.id())) {
                 continue;
             }
             if (disabled.contains("provider:" + p.id())) {

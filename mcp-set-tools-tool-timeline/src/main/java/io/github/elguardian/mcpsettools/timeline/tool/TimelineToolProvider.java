@@ -21,4 +21,11 @@ public final class TimelineToolProvider implements ToolProvider {
         all.addAll(new TimelineTools(context).tools());
         return all;
     }
+
+    @Override
+    public String instructions() {
+        return """
+                Concurrency: timeline draws what threads did over time from a recording, logs, a maven_run log or given \
+                events, with overlap and lock-wait analysis.""";
+    }
 }

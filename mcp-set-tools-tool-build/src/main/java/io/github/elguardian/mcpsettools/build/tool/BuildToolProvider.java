@@ -22,4 +22,12 @@ public final class BuildToolProvider implements ToolProvider {
         all.addAll(new JunitTools().tools());
         return all;
     }
+
+    @Override
+    public String instructions() {
+        return """
+                Builds and tests: maven_reactor (modules, build order, what a change affects), maven_run (runs Maven, \
+                returns compiler errors, failed tests and module status instead of the raw log), maven_log (parses an \
+                existing log); junit_summary, junit_failures and junit_compare read surefire/failsafe/Gradle XML reports.""";
+    }
 }

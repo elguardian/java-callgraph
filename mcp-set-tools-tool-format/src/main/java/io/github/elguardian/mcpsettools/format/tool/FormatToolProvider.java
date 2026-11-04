@@ -21,4 +21,12 @@ public final class FormatToolProvider implements ToolProvider {
         all.addAll(new TableTools().tools());
         return all;
     }
+
+    @Override
+    public String instructions() {
+        return """
+                Output: tools returning lists take table_format (ascii, markdown, jira, slack, csv, tsv, html); \
+                table_render formats any rows for pasting into Jira, Slack or a terminal. stacktrace_parse explains a \
+                pasted stack trace.""";
+    }
 }

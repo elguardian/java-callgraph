@@ -37,6 +37,7 @@ class McpServerIT {
         try {
             McpSchema.InitializeResult init = client.initialize();
             assertEquals("mcp-set-tools", init.serverInfo().name());
+            assertTrue(init.serverInfo().version().matches("\\d.*"), init.serverInfo().version());
             assertTrue(init.instructions().contains("load_model"));
 
             List<String> names = client.listTools().tools().stream().map(McpSchema.Tool::name).toList();

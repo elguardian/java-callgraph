@@ -21,4 +21,15 @@ public final class CallgraphToolProvider implements ToolProvider {
         all.addAll(new AnalysisTools(new Models()).tools());
         return all;
     }
+
+    @Override
+    public String instructions() {
+        return """
+                Call graphs: a static call graph built from bytecode combined with runtime recordings made by the \
+                mcp-set-tools agent. load_model with the application jars/WAR as app (third-party jars as lib) and/or \
+                recording directories as trace; find_methods to get exact method names; then call_paths, check_guard, \
+                callers/callees, describe_method, gap_report, hotspots or run_detectors on the returned model_id. To \
+                record a running JVM: list_jvms, attach_agent with incl= patterns, recorder start/stop, then load_model \
+                with the stopped recording's directory as trace. Method names in results can be passed back as patterns.""";
+    }
 }

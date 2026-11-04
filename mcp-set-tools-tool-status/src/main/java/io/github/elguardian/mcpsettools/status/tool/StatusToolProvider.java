@@ -21,4 +21,12 @@ public final class StatusToolProvider implements ToolProvider {
         all.addAll(new StatusTools().tools());
         return all;
     }
+
+    @Override
+    public String instructions() {
+        return """
+                Daily work: daily_status lists open Jira issues assigned to the user and their open GitHub pull requests \
+                and GitLab merge requests (authored, review requested, assigned, mentioned), ordered by what needs them \
+                first, with new feedback since the last run.""";
+    }
 }
