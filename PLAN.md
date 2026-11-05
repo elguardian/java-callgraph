@@ -86,7 +86,9 @@ Maven modules: `mcp-set-tools-rt` (probe runtime), `mcp-set-tools-core`, `mcp-se
 `mcp-set-tools-analyze`, `mcp-set-tools-cli`, plus `mcp-set-tools-testkit` (in-test compilation helpers).
 The MCP tool set adds `mcp-set-tools-commons`, `-timeline` and `-connectors` (building blocks),
 `mcp-set-tools-tool-api` (tool SPI), nine `mcp-set-tools-tool-*` modules and the `mcp-set-tools-mcp`
-host; the README's Architecture section has the layer diagram.
+host; the README's Architecture section has the layer diagram. The modules live in four
+directories with aggregator parents: `libs/`, `engine/` (the analyzer modules above), `tools/`
+and `apps/` (cli, maven-plugin, mcp).
 The legacy BCEL/Javassist code and `process_trace.rb` are removed in Phase 0.
 
 ## WildFly / Arquillian constraints for the agent

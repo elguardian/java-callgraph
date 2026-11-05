@@ -32,34 +32,48 @@ it finds.
  Layer 0  blocks        commons  timeline  connectors   rt  core  static  analyze  agent
 ```
 
+The modules are grouped in four directories, each with an aggregator pom that is also the
+modules' parent (`mcp-set-tools-libs`, `-engine`, `-tools`, `-apps`; all inherit from the root
+`mcp-set-tools-parent`, which holds the versions and plugin configuration):
+
+* `libs/`: building blocks (layer 0) without a tool or MCP concept (commons, timeline, connectors) and the
+  test kit;
+* `engine/`: the call-graph analyzer (probe runtime, model, static analysis, agent, analysis and
+  detectors), layer 0 as well;
+* `tools/`: the tool SPI and the tool modules (layers 1 and 2);
+* `apps/`: the hosts (layer 3).
+
+`mvn -pl tools/mcp-set-tools-tool-jvm -am verify` builds one module with what it needs;
+`mvn -f tools/pom.xml verify` builds a category against installed artifacts.
+
 Only `mcp-set-tools-mcp` depends on the MCP SDK. A tool module depends on `tool-api`, building
 blocks and, where it reuses a parser, the library packages of another tool module (build uses
 logs; git uses build; issues uses logs, build and connectors).
 
-| Module | Layer | Purpose |
-|--------|-------|---------|
-| `mcp-set-tools-commons` | 0 | Stack trace parsing, tables (ascii/markdown/jira/slack/csv/tsv/html), templates, JSON read/write, `ProcessRunner`, `HttpJson` |
-| `mcp-set-tools-timeline` | 0 | Spans, marks, layout, overlap/lock analysis, renderers (ascii, mermaid, plantuml, chrome trace, html) and the `TimelineSource` SPI |
-| `mcp-set-tools-connectors` | 0 | Jira (REST), GitHub (GraphQL) and GitLab (REST) clients |
-| `mcp-set-tools-core` | 0 | Shared model: `MethodId`, `CallGraph` with per-edge provenance, JSON/DOT output, trace reader |
-| `mcp-set-tools-rt` | 0 | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
-| `mcp-set-tools-agent` | 0 | Java agent, packaged as `mcp-set-tools-agent/target/mcp-set-tools-agent.jar` |
-| `mcp-set-tools-static` | 0 | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
-| `mcp-set-tools-analyze` | 0 | Merged static + runtime model, graph queries, gap report, bug detectors |
-| `mcp-set-tools-tool-api` | 1 | The tool SPI and `ToolRegistry` (discovery, disabled list, dispatch), background jobs |
-| `mcp-set-tools-tool-format` | 2 | `table_render`, `stacktrace_parse` |
-| `mcp-set-tools-tool-logs` | 2 | `log_query`, `log_pattern`; timeline source `log` |
-| `mcp-set-tools-tool-build` | 2 | `maven_reactor`, `maven_run`, `maven_log`, `junit_summary`, `junit_failures`, `junit_compare`; timeline source `maven` |
-| `mcp-set-tools-tool-timeline` | 2 | `timeline` (built-in `events` source; the others are found by ServiceLoader) |
-| `mcp-set-tools-tool-git` | 2 | `stacktrace_map`, `bisect_run` |
-| `mcp-set-tools-tool-issues` | 2 | `known_issue_match`, `known_issue_add`, `known_issue_import` |
-| `mcp-set-tools-tool-status` | 2 | `daily_status` |
-| `mcp-set-tools-tool-jvm` | 2 | `list_jvms`, `attach_agent`, `recorder`, `watch_method`, `thread_dump_analyze`, `gc_log_analyze`, `heap_histogram`, `jfr_analyze`; timeline sources `gc`, `jfr` |
-| `mcp-set-tools-tool-callgraph` | 2 | `load_model` … `export_graph`; timeline source `recording` |
-| `mcp-set-tools-mcp` | 3 | MCP server, packaged as `mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar` with every tool module |
-| `mcp-set-tools-cli` | 3 | Command line front end, packaged as `mcp-set-tools-cli/target/mcp-set-tools.jar` |
-| `mcp-set-tools-maven-plugin` | 3 | `prepare-agent` and `analyze` goals for `mvn verify` |
-| `mcp-set-tools-testkit` | test | In-memory compilation of fixtures, forked JVM runs, `ToolHarness` for tool tests |
+| Module | Directory | Purpose |
+|--------|-----------|---------|
+| `mcp-set-tools-commons` | `libs/` | Stack trace parsing, tables (ascii/markdown/jira/slack/csv/tsv/html), templates, JSON read/write, `ProcessRunner`, `HttpJson` |
+| `mcp-set-tools-timeline` | `libs/` | Spans, marks, layout, overlap/lock analysis, renderers (ascii, mermaid, plantuml, chrome trace, html) and the `TimelineSource` SPI |
+| `mcp-set-tools-connectors` | `libs/` | Jira (REST), GitHub (GraphQL) and GitLab (REST) clients |
+| `mcp-set-tools-core` | `engine/` | Shared model: `MethodId`, `CallGraph` with per-edge provenance, JSON/DOT output, trace reader |
+| `mcp-set-tools-rt` | `engine/` | Probe runtime called by instrumented code (bootstrap class path, no dependencies) |
+| `mcp-set-tools-agent` | `engine/` | Java agent, packaged as `engine/mcp-set-tools-agent/target/mcp-set-tools-agent.jar` |
+| `mcp-set-tools-static` | `engine/` | Static analysis: class hierarchy, CHA/RTA call graph, control/data flow engine |
+| `mcp-set-tools-analyze` | `engine/` | Merged static + runtime model, graph queries, gap report, bug detectors |
+| `mcp-set-tools-tool-api` | `tools/` | The tool SPI and `ToolRegistry` (discovery, disabled list, dispatch), background jobs |
+| `mcp-set-tools-tool-format` | `tools/` | `table_render`, `stacktrace_parse` |
+| `mcp-set-tools-tool-logs` | `tools/` | `log_query`, `log_pattern`; timeline source `log` |
+| `mcp-set-tools-tool-build` | `tools/` | `maven_reactor`, `maven_run`, `maven_log`, `junit_summary`, `junit_failures`, `junit_compare`; timeline source `maven` |
+| `mcp-set-tools-tool-timeline` | `tools/` | `timeline` (built-in `events` source; the others are found by ServiceLoader) |
+| `mcp-set-tools-tool-git` | `tools/` | `stacktrace_map`, `bisect_run` |
+| `mcp-set-tools-tool-issues` | `tools/` | `known_issue_match`, `known_issue_add`, `known_issue_import` |
+| `mcp-set-tools-tool-status` | `tools/` | `daily_status` |
+| `mcp-set-tools-tool-jvm` | `tools/` | `list_jvms`, `attach_agent`, `recorder`, `watch_method`, `thread_dump_analyze`, `gc_log_analyze`, `heap_histogram`, `jfr_analyze`; timeline sources `gc`, `jfr` |
+| `mcp-set-tools-tool-callgraph` | `tools/` | `load_model` … `export_graph`; timeline source `recording` |
+| `mcp-set-tools-mcp` | `apps/` | MCP server, packaged as `apps/mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar` with every tool module |
+| `mcp-set-tools-cli` | `apps/` | Command line front end, packaged as `apps/mcp-set-tools-cli/target/mcp-set-tools.jar` |
+| `mcp-set-tools-maven-plugin` | `apps/` | `prepare-agent` and `analyze` goals for `mvn verify` |
+| `mcp-set-tools-testkit` | `libs/` | In-memory compilation of fixtures, forked JVM runs, `ToolHarness` for tool tests |
 
 ## Build
 
@@ -72,7 +86,7 @@ mvn verify
 ## Static call graph
 
 ```
-java -jar mcp-set-tools-cli/target/mcp-set-tools.jar static [--lib deps.jar] [--algorithm cha|rta] \
+java -jar apps/mcp-set-tools-cli/target/mcp-set-tools.jar static [--lib deps.jar] [--algorithm cha|rta] \
      [--format text|json|dot|dot-classes] [--output file] app.jar|classes/|app.war ...
 ```
 
@@ -340,7 +354,7 @@ It keeps loaded models in memory: a deployment is analyzed once per session and 
 many times, instead of once per CLI call.
 
 ```
-claude mcp add mcp-set-tools -- java -jar /path/to/mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar
+claude mcp add mcp-set-tools -- java -jar /path/to/mcp-set-tools/apps/mcp-set-tools-mcp/target/mcp-set-tools-mcp.jar
 ```
 
 Other clients take the same command in their JSON configuration:

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.elguardian</groupId>
+    <artifactId>mcp-set-tools-parent</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>mcp-set-tools-tools</artifactId>
+  <packaging>pom</packaging>
+  <name>mcp-set-tools-tools</name>
+  <description>The tool SPI and the tool modules offered to hosts</description>
+
+  <modules>
+    <module>mcp-set-tools-tool-api</module>
+    <module>mcp-set-tools-tool-format</module>
+    <module>mcp-set-tools-tool-timeline</module>
+    <module>mcp-set-tools-tool-logs</module>
+    <module>mcp-set-tools-tool-build</module>
+    <module>mcp-set-tools-tool-git</module>
+    <module>mcp-set-tools-tool-issues</module>
+    <module>mcp-set-tools-tool-status</module>
+    <module>mcp-set-tools-tool-jvm</module>
+    <module>mcp-set-tools-tool-callgraph</module>
+  </modules>
+</project>

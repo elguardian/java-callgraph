@@ -19,28 +19,10 @@
   </licenses>
 
   <modules>
-    <module>mcp-set-tools-commons</module>
-    <module>mcp-set-tools-tool-api</module>
-    <module>mcp-set-tools-timeline</module>
-    <module>mcp-set-tools-connectors</module>
-    <module>mcp-set-tools-testkit</module>
-    <module>mcp-set-tools-rt</module>
-    <module>mcp-set-tools-core</module>
-    <module>mcp-set-tools-static</module>
-    <module>mcp-set-tools-agent</module>
-    <module>mcp-set-tools-analyze</module>
-    <module>mcp-set-tools-cli</module>
-    <module>mcp-set-tools-maven-plugin</module>
-    <module>mcp-set-tools-tool-format</module>
-    <module>mcp-set-tools-tool-timeline</module>
-    <module>mcp-set-tools-tool-logs</module>
-    <module>mcp-set-tools-tool-build</module>
-    <module>mcp-set-tools-tool-git</module>
-    <module>mcp-set-tools-tool-issues</module>
-    <module>mcp-set-tools-tool-status</module>
-    <module>mcp-set-tools-tool-jvm</module>
-    <module>mcp-set-tools-tool-callgraph</module>
-    <module>mcp-set-tools-mcp</module>
+    <module>libs</module>
+    <module>engine</module>
+    <module>tools</module>
+    <module>apps</module>
   </modules>
 
   <properties>

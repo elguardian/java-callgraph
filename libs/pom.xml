@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.elguardian</groupId>
+    <artifactId>mcp-set-tools-parent</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>mcp-set-tools-libs</artifactId>
+  <packaging>pom</packaging>
+  <name>mcp-set-tools-libs</name>
+  <description>Building blocks: commons, timeline, connectors and the test kit; no tool or MCP concept</description>
+
+  <modules>
+    <module>mcp-set-tools-commons</module>
+    <module>mcp-set-tools-timeline</module>
+    <module>mcp-set-tools-connectors</module>
+    <module>mcp-set-tools-testkit</module>
+  </modules>
+</project>
